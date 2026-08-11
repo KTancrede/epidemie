@@ -1,4 +1,4 @@
-package main.java.parametres;
+package parametres;
 
 public interface IParametresMaladie {
 	

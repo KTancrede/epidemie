@@ -1,8 +1,8 @@
-package main.java.parametres;
+package parametres;
 
 import java.util.Random;
 
-import main.java.modele.Sexe;
+import modele.Sexe;
 
 
 public class TestParamPop implements IParametresPopulation {

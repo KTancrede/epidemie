@@ -1,4 +1,4 @@
-package main.java.modele;
+package modele;
 
 public enum Sexe {
 	FEMME, HOMME;

@@ -1,8 +1,8 @@
-package main.java.modele;
+package modele;
 
 import java.util.ArrayList;
 
-import main.java.parametres.IParametresPopulation;
+import IParametresPopulation;
 
 public class Population {
 

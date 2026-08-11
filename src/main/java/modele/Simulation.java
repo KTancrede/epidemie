@@ -1,9 +1,9 @@
-package main.java.modele;
+package modele;
 
 import java.util.HashSet;
 
-import main.java.parametres.IParametresMaladie;
-import main.java.parametres.IParametresPopulation;
+import parametres.IParametresMaladie;
+import parametres.IParametresPopulation;
 
 public class Simulation {
 	

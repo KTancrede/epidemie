@@ -1,6 +1,6 @@
-package main.java.parametres;
+package parametres;
 
-import main.java.modele.Sexe;
+import modele.Sexe;
 
 public interface IParametresPopulation {
 	

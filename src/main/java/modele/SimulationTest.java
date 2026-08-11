@@ -1,7 +1,7 @@
-package main.java.modele;
+package modele;
 
-import main.java.parametres.TestParamMal;
-import main.java.parametres.TestParamPop;
+import TestParamMal;
+import TestParamPop;
 
 public class SimulationTest {
 	
