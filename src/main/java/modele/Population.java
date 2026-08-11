@@ -1,25 +1,41 @@
-package modele;
+package main.java.modele;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
-import parametres.ParametresPopulation;
+import main.java.parametres.IParametresPopulation;
 
 public class Population {
 
-	private ParametresPopulation param;
+	private IParametresPopulation param;
 	private int taillePop;
 	private ArrayList<Individu> individus = new ArrayList<>();
 
-	public Population(ParametresPopulation param) {
+	public Population(IParametresPopulation param) {
 		this.param = param;
 		this.taillePop = param.taillePop();
 
 		for (int i = 0; i < this.taillePop; i++) {
-			individus.add(new Individu(param.ageIndividu(), EtatSante.SAIN, param.nbContacteSouhaite()));
+			int age = param.ageIndividu(); // repartition selon des sources 
+			Sexe sexe = param.sexe();
+			individus.add(
+					new Individu(age, 
+							EtatSante.SAIN, 
+							param.nbContacteSouhaite(age), // nombre en fonction de l'age sourcé aussi
+							sexe, // distribution uniforme
+							param.isDiabetique(age,sexe)
+							)
+					); 
 		}
 	}
-
+	
+	public ArrayList<Individu> getIndividus(){
+		return individus;
+	}
+	
+	public int getTaillePop() {
+		return taillePop;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder r = new StringBuilder();
@@ -49,15 +65,5 @@ public class Population {
 				i.addContact(ii);
 			}
 		}
-	}
-
-	public void patientZero() {
-		int z = (int) (Math.random() * taillePop);
-
-		Individu patientZero = individus.get(z);
-	    patientZero.setMalade(0);
-
-	    System.out.println(patientZero);
-
 	}
 }

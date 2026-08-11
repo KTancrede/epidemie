@@ -1,6 +1,6 @@
-package parametres;
+package main.java.parametres;
 
-public interface ParametresMaladie {
+public interface IParametresMaladie {
 	
 	public double probabiliteTransmission();
 	public double probabiliteGuerison();
@@ -8,4 +8,6 @@ public interface ParametresMaladie {
 	
 	public int dureeIncubation();
 	public int dureeContagion();
+	public double facteurRisqueAge(int age);
+	public double facteurRisqueDiabete();
 }
