@@ -2,34 +2,54 @@ name: Build Simépie
 
 on:
   workflow_dispatch:
+
   push:
     tags:
       - "v*"
 
 jobs:
+
   build:
+
     strategy:
+      fail-fast: false
+
       matrix:
         include:
+
           - os: ubuntu-latest
             platform: linux
+
           - os: windows-latest
             platform: windows
+
           - os: macos-latest
             platform: macos
 
     runs-on: ${{ matrix.os }}
 
     steps:
+
+      # =========================================================
+      # CHECKOUT
+      # =========================================================
+
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
+
+      # =========================================================
+      # JAVA
+      # =========================================================
 
       - name: Setup Java 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
+
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
+
 
       - name: Vérifier Java
         run: |
@@ -37,27 +57,49 @@ jobs:
           javac -version
           jpackage --version
 
+
       # =========================================================
-      # LINUX
+      # LINUX - DEPENDANCES
       # =========================================================
 
       - name: Installer dépendances Linux
         if: matrix.platform == 'linux'
+
         run: |
           sudo apt-get update
-          sudo apt-get install -y rpm fakeroot binutils
 
-      - name: Build Maven Linux
-        if: matrix.platform == 'linux'
+          sudo apt-get install -y \
+            rpm \
+            fakeroot \
+            binutils \
+            gnupg
+
+
+      # =========================================================
+      # BUILD MAVEN
+      # =========================================================
+
+      - name: Build Maven
         run: mvn -B clean package
 
-      - name: Créer runtime Linux
-        if: matrix.platform == 'linux'
+
+      # =========================================================
+      # JLINK
+      # =========================================================
+
+      - name: Créer runtime Java
         run: mvn -B javafx:jlink
+
+
+      # =========================================================
+      # LINUX - DEB
+      # =========================================================
 
       - name: Créer DEB
         if: matrix.platform == 'linux'
+
         run: |
+
           mkdir -p target/installers
 
           jpackage \
@@ -72,9 +114,16 @@ jobs:
             --linux-shortcut \
             --description "Simulateur de propagation épidémique"
 
+
+      # =========================================================
+      # LINUX - RPM
+      # =========================================================
+
       - name: Créer RPM
         if: matrix.platform == 'linux'
+
         run: |
+
           jpackage \
             --type rpm \
             --name "Simepie" \
@@ -87,23 +136,69 @@ jobs:
             --linux-shortcut \
             --description "Simulateur de propagation épidémique"
 
+
       # =========================================================
-      # WINDOWS
+      # LINUX - IMPORT CLE GPG
       # =========================================================
 
-      - name: Build Maven Windows
-        if: matrix.platform == 'windows'
-        run: mvn -B clean package
+      - name: Importer clé GPG
+        if: matrix.platform == 'linux'
 
-      - name: Créer runtime Windows
-        if: matrix.platform == 'windows'
-        run: mvn -B javafx:jlink
+        env:
+          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+
+        run: |
+
+          echo "$RPM_GPG_PRIVATE_KEY" \
+            | gpg --batch --import
+
+
+      # =========================================================
+      # LINUX - SIGNATURE RPM
+      # =========================================================
+
+      - name: Signer RPM
+        if: matrix.platform == 'linux'
+
+        env:
+          RPM_GPG_KEY_ID: ${{ secrets.RPM_GPG_KEY_ID }}
+
+        run: |
+
+          rpmsign \
+            --key-id "$RPM_GPG_KEY_ID" \
+            --addsign \
+            target/installers/*.rpm
+
+
+      # =========================================================
+      # LINUX - VERIFICATION SIGNATURE
+      # =========================================================
+
+      - name: Vérifier signature RPM
+        if: matrix.platform == 'linux'
+
+        run: |
+
+          rpm -Kv \
+            target/installers/*.rpm
+
+
+      # =========================================================
+      # WINDOWS - EXE
+      # =========================================================
 
       - name: Créer EXE Windows
         if: matrix.platform == 'windows'
+
         shell: powershell
+
         run: |
-          New-Item -ItemType Directory -Force -Path target/installers
+
+          New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path target/installers
 
           jpackage `
             --type exe `
@@ -116,21 +211,16 @@ jobs:
             --win-menu `
             --win-shortcut
 
-      # =========================================================
-      # MACOS
-      # =========================================================
 
-      - name: Build Maven macOS
-        if: matrix.platform == 'macos'
-        run: mvn -B clean package
-
-      - name: Créer runtime macOS
-        if: matrix.platform == 'macos'
-        run: mvn -B javafx:jlink
+      # =========================================================
+      # MACOS - DMG
+      # =========================================================
 
       - name: Créer DMG macOS
         if: matrix.platform == 'macos'
+
         run: |
+
           mkdir -p target/installers
 
           jpackage \
@@ -142,12 +232,37 @@ jobs:
             --dest target/installers \
             --description "Simulateur de propagation épidémique"
 
+
       # =========================================================
-      # ARTEFACTS
+      # AFFICHER RESULTATS
+      # =========================================================
+
+      - name: Afficher installateurs Linux/macOS
+        if: matrix.platform != 'windows'
+
+        run: |
+          ls -lah target/installers
+
+
+      - name: Afficher installateurs Windows
+        if: matrix.platform == 'windows'
+
+        shell: powershell
+
+        run: |
+          Get-ChildItem target/installers
+
+
+      # =========================================================
+      # UPLOAD ARTIFACTS
       # =========================================================
 
       - name: Upload installers
         uses: actions/upload-artifact@v4
+
         with:
           name: Simepie-${{ matrix.platform }}
+
           path: target/installers/*
+
+          if-no-files-found: error
