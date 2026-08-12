@@ -8,15 +8,12 @@ on:
       - "v*"
 
 jobs:
-
   build:
-
     strategy:
       fail-fast: false
 
       matrix:
         include:
-
           - os: ubuntu-latest
             platform: linux
 
@@ -44,12 +41,10 @@ jobs:
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
-
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
-
 
       - name: Vérifier Java
         run: |
@@ -64,10 +59,8 @@ jobs:
 
       - name: Installer dépendances Linux
         if: matrix.platform == 'linux'
-
         run: |
           sudo apt-get update
-
           sudo apt-get install -y \
             rpm \
             fakeroot \
@@ -97,9 +90,7 @@ jobs:
 
       - name: Créer DEB
         if: matrix.platform == 'linux'
-
         run: |
-
           mkdir -p target/installers
 
           jpackage \
@@ -121,9 +112,7 @@ jobs:
 
       - name: Créer RPM
         if: matrix.platform == 'linux'
-
         run: |
-
           jpackage \
             --type rpm \
             --name "Simepie" \
@@ -143,14 +132,10 @@ jobs:
 
       - name: Importer clé GPG
         if: matrix.platform == 'linux'
-
         env:
           RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
-
         run: |
-
-          echo "$RPM_GPG_PRIVATE_KEY" \
-            | gpg --batch --import
+          echo "$RPM_GPG_PRIVATE_KEY" | gpg --batch --import
 
 
       # =========================================================
@@ -159,12 +144,9 @@ jobs:
 
       - name: Signer RPM
         if: matrix.platform == 'linux'
-
         env:
           RPM_GPG_KEY_ID: ${{ secrets.RPM_GPG_KEY_ID }}
-
         run: |
-
           rpmsign \
             --key-id "$RPM_GPG_KEY_ID" \
             --addsign \
@@ -176,17 +158,15 @@ jobs:
       # =========================================================
 
       - name: Vérifier signature RPM
-  	if: matrix.platform == 'linux'
+        if: matrix.platform == 'linux'
+        env:
+          RPM_GPG_KEY_ID: ${{ secrets.RPM_GPG_KEY_ID }}
+        run: |
+          gpg --armor --export "$RPM_GPG_KEY_ID" > target/installers/simepie-public.asc
 
-  	env:
-    	  RPM_GPG_KEY_ID: ${{ secrets.RPM_GPG_KEY_ID }}
+          sudo rpm --import target/installers/simepie-public.asc
 
- 	run: |
-   	  gpg --armor --export "$RPM_GPG_KEY_ID" > target/installers/simepie-public.asc
-
-    	  sudo rpm --import simepie-public.asc
-
-    	  rpm -Kv target/installers/*.rpm
+          rpm -Kv target/installers/*.rpm
 
 
       # =========================================================
@@ -195,11 +175,8 @@ jobs:
 
       - name: Créer EXE Windows
         if: matrix.platform == 'windows'
-
         shell: powershell
-
         run: |
-
           New-Item `
             -ItemType Directory `
             -Force `
@@ -223,9 +200,7 @@ jobs:
 
       - name: Créer DMG macOS
         if: matrix.platform == 'macos'
-
         run: |
-
           mkdir -p target/installers
 
           jpackage \
@@ -244,16 +219,12 @@ jobs:
 
       - name: Afficher installateurs Linux/macOS
         if: matrix.platform != 'windows'
-
         run: |
           ls -lah target/installers
 
-
       - name: Afficher installateurs Windows
         if: matrix.platform == 'windows'
-
         shell: powershell
-
         run: |
           Get-ChildItem target/installers
 
@@ -264,10 +235,7 @@ jobs:
 
       - name: Upload installers
         uses: actions/upload-artifact@v4
-
         with:
           name: Simepie-${{ matrix.platform }}
-
           path: target/installers/*
-
           if-no-files-found: error
