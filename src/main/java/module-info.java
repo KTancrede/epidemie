@@ -1,9 +1,3 @@
-/**
- * 
- */
-/**
- * 
- */
 module epidemie {
     requires javafx.controls;
 	requires javafx.graphics;

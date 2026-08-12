@@ -23,11 +23,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.image.Image;
 
 import modele.EtatSante;
 import modele.Individu;
@@ -71,6 +71,10 @@ public class VueSimulation extends Application {
 
     private TableView<Individu> tablePopulation;
 
+    // ==========================================================
+    // STATISTIQUES
+    // ==========================================================
+
     private Label labelSains;
     private Label labelIncubation;
     private Label labelMalades;
@@ -91,16 +95,35 @@ public class VueSimulation extends Application {
     private VBox zoneParametresMaladie;
 
 
+    // ==========================================================
+    // START
+    // ==========================================================
+
     @Override
     public void start(Stage stage) {
-
+    	
+    	stage.getIcons().add(
+    	        new Image(
+    	                getClass()
+    	                        .getResourceAsStream("/images/logo.png")
+    	        )
+    	);
         BorderPane root = new BorderPane();
+
+        root.getStyleClass().add(
+                "root-simulation"
+        );
 
         // ======================================================
         // PANNEAU GAUCHE
         // ======================================================
 
-        VBox panneauGauche = new VBox(12);
+        VBox panneauGauche =
+                new VBox(12);
+
+        panneauGauche.getStyleClass().add(
+                "panneau-gauche"
+        );
 
         panneauGauche.prefWidthProperty()
                 .bind(
@@ -108,34 +131,40 @@ public class VueSimulation extends Application {
                                 .multiply(0.28)
                 );
 
-        panneauGauche.setStyle(
-                "-fx-border-color: transparent gray transparent transparent;" +
-                "-fx-border-width: 0 1 0 0;" +
-                "-fx-padding: 20;"
-        );
-
         // ======================================================
         // PANNEAU DROIT
         // ======================================================
 
-        VBox panneauDroit = new VBox(10);
+        VBox panneauDroit =
+                new VBox(10);
 
-        Pane zoneCentrale = new Pane();
-
-        HBox zoneInformations = new HBox();
-
-        zoneCentrale.setStyle(
-                "-fx-background-color: #EEEEEE;"
+        panneauDroit.getStyleClass().add(
+                "panneau-droit"
         );
 
-        zoneInformations.setStyle(
-                "-fx-background-color: #f4f4f4;" +
-                "-fx-border-color: #999999;" +
-                "-fx-border-width: 1;" +
-                "-fx-border-radius: 5;" +
-                "-fx-background-radius: 5;"
+        // ======================================================
+        // ZONE POPULATION
+        // ======================================================
+
+        Pane zoneCentrale =
+                new Pane();
+
+        zoneCentrale.getStyleClass().add(
+                "zone-population"
         );
 
+        // ======================================================
+        // ZONE INFORMATIONS
+        // ======================================================
+
+        HBox zoneInformations =
+                new HBox();
+
+        zoneInformations.getStyleClass().add(
+                "zone-informations"
+        );
+
+        // 80 % de la hauteur pour la population
         zoneCentrale.prefHeightProperty()
                 .bind(
                         panneauDroit
@@ -143,6 +172,7 @@ public class VueSimulation extends Application {
                                 .multiply(0.80)
                 );
 
+        // 20 % pour les contrôles et paramètres
         zoneInformations.prefHeightProperty()
                 .bind(
                         panneauDroit
@@ -174,6 +204,10 @@ public class VueSimulation extends Application {
                                 .multiply(0.15)
                 );
 
+        // ======================================================
+        // PARAMETRES MALADIE
+        // ======================================================
+
         this.zoneParametresMaladie =
                 creerZoneParametresMaladie();
 
@@ -192,22 +226,61 @@ public class VueSimulation extends Application {
         // ======================================================
 
         Label titrePopulation =
-                new Label("PARAMÈTRES POPULATION");
+                new Label(
+                        "PARAMÈTRES POPULATION"
+                );
+
+        titrePopulation.getStyleClass().add(
+                "titre-section"
+        );
 
         Label labelTaille =
-                new Label("Taille de la population");
+                new Label(
+                        "Taille de la population"
+                );
+
+        labelTaille.getStyleClass().add(
+                "label-parametre"
+        );
 
         TextField champTaille =
                 new TextField();
 
+        champTaille.getStyleClass().add(
+                "champ-parametre"
+        );
+
+        // ======================================================
+        // BOUTONS POPULATION
+        // ======================================================
+
         Button boutonGenererPopulation =
-                new Button("Générer la population");
+                new Button(
+                        "Générer la population"
+                );
+
+        boutonGenererPopulation
+                .getStyleClass()
+                .add(
+                        "bouton-principal"
+                );
 
         Button boutonGenererLiens =
-                new Button("Générer les liens");
+                new Button(
+                        "Générer les liens"
+                );
 
-        boutonGenererLiens.setDisable(true);
+        boutonGenererLiens
+                .getStyleClass()
+                .add(
+                        "bouton-secondaire"
+                );
 
+        boutonGenererLiens.setDisable(
+                true
+        );
+
+        // Entrée dans le champ taille
         champTaille.setOnAction(
                 event ->
                         boutonGenererPopulation.fire()
@@ -216,13 +289,25 @@ public class VueSimulation extends Application {
         HBox ligneBoutons =
                 new HBox(10);
 
+        ligneBoutons.getStyleClass().add(
+                "ligne-boutons"
+        );
+
         ligneBoutons.getChildren().addAll(
                 boutonGenererPopulation,
                 boutonGenererLiens
         );
 
+        // ======================================================
+        // SEPARATEUR
+        // ======================================================
+
         Separator separateur1 =
                 new Separator();
+
+        separateur1.getStyleClass().add(
+                "separateur-section"
+        );
 
         // ======================================================
         // STATISTIQUES
@@ -243,35 +328,29 @@ public class VueSimulation extends Application {
         labelMorts =
                 new Label("Morts : 0");
 
-        labelSains.setTextFill(
-                couleurEtat(
-                        EtatSante.SAIN
-                )
-        );
+        // Couleurs entièrement gérées en CSS
 
-        labelIncubation.setTextFill(
-                couleurEtat(
-                        EtatSante.INCUBATION
-                )
-        );
+        labelSains
+                .getStyleClass()
+                .add("stat-sain");
 
-        labelMalades.setTextFill(
-                couleurEtat(
-                        EtatSante.MALADE
-                )
-        );
+        labelIncubation
+                .getStyleClass()
+                .add("stat-incubation");
 
-        labelGueris.setTextFill(
-                couleurEtat(
-                        EtatSante.GUERI
-                )
-        );
+        labelMalades
+                .getStyleClass()
+                .add("stat-malade");
 
-        labelMorts.setTextFill(
-                couleurEtat(
-                        EtatSante.MORT
-                )
-        );
+        labelGueris
+                .getStyleClass()
+                .add("stat-gueri");
+
+        labelMorts
+                .getStyleClass()
+                .add("stat-mort");
+
+        // Première ligne statistiques
 
         HBox ligneStats1 =
                 new HBox(30);
@@ -280,11 +359,17 @@ public class VueSimulation extends Application {
                 Pos.CENTER
         );
 
+        ligneStats1.getStyleClass().add(
+                "ligne-stats"
+        );
+
         ligneStats1.getChildren().addAll(
                 labelSains,
                 labelMalades,
                 labelIncubation
         );
+
+        // Deuxième ligne statistiques
 
         HBox ligneStats2 =
                 new HBox(30);
@@ -293,10 +378,16 @@ public class VueSimulation extends Application {
                 Pos.CENTER
         );
 
+        ligneStats2.getStyleClass().add(
+                "ligne-stats"
+        );
+
         ligneStats2.getChildren().addAll(
                 labelGueris,
                 labelMorts
         );
+
+        // Zone statistiques
 
         VBox zoneStats =
                 new VBox(8);
@@ -305,13 +396,25 @@ public class VueSimulation extends Application {
                 Pos.CENTER
         );
 
+        zoneStats.getStyleClass().add(
+                "zone-stats"
+        );
+
         zoneStats.getChildren().addAll(
                 ligneStats1,
                 ligneStats2
         );
 
+        // ======================================================
+        // SECOND SEPARATEUR
+        // ======================================================
+
         Separator separateur3 =
                 new Separator();
+
+        separateur3.getStyleClass().add(
+                "separateur-section"
+        );
 
         // ======================================================
         // TABLEAU
@@ -329,109 +432,136 @@ public class VueSimulation extends Application {
         // GENERER POPULATION
         // ======================================================
 
-        boutonGenererPopulation.setOnAction(event -> {
+        boutonGenererPopulation.setOnAction(
+                event -> {
 
-            try {
+                    try {
 
-                int taille =
-                        Integer.parseInt(
-                                champTaille.getText()
+                        int taille =
+                                Integer.parseInt(
+                                        champTaille
+                                                .getText()
+                                );
+
+                        if (taille <= 0) {
+                            return;
+                        }
+
+                        // Arrêt d'une ancienne simulation
+
+                        if (
+                                timelineSimulation
+                                != null
+                        ) {
+
+                            timelineSimulation.stop();
+                        }
+
+                        Individu.resetCompteurID();
+
+                        // ================= PARAM POP =================
+
+                        IParametresPopulation paramPop =
+                                new TestParamPop(
+                                        taille
+                                );
+
+                        // ================= PARAM MAL =================
+
+                        ParametresMaladie paramMal =
+                                lireParametresMaladie();
+
+                        // ================= SIMULATION =================
+
+                        this.sim =
+                                new Simulation(
+                                        paramPop,
+                                        paramMal,
+                                        0
+                                );
+
+                        this.pop =
+                                sim.getPop();
+
+                        // ================= RESET =================
+
+                        this.jourActuel =
+                                0;
+
+                        this.patientZeroCree =
+                                false;
+
+                        this.simulationTerminee =
+                                false;
+
+                        labelJour.setText(
+                                "Jour 0"
                         );
 
-                if (taille <= 0) {
-                    return;
+                        // Les paramètres peuvent être modifiés
+                        // jusqu'au lancement de la simulation.
+
+                        zoneParametresMaladie
+                                .setDisable(false);
+
+                        boutonGenererLiens
+                                .setDisable(false);
+
+                        // ================= TABLEAU =================
+
+                        tablePopulation.setItems(
+                                FXCollections
+                                        .observableArrayList(
+                                                pop.getIndividus()
+                                        )
+                        );
+
+                        // ================= GRAPH =================
+
+                        afficherPopulation(
+                                zoneCentrale
+                        );
+
+                        mettreAJourStatistiques();
+
+                    } catch (
+                            NumberFormatException e
+                    ) {
+
+                        System.out.println(
+                                "Paramètre invalide"
+                        );
+                    }
                 }
-
-                // Arrêt d'une ancienne simulation
-                if (timelineSimulation != null) {
-
-                    timelineSimulation.stop();
-                }
-
-                Individu.resetCompteurID();
-
-                IParametresPopulation paramPop =
-                        new TestParamPop(
-                                taille
-                        );
-
-                ParametresMaladie paramMal =
-                        lireParametresMaladie();
-
-                this.sim =
-                        new Simulation(
-                                paramPop,
-                                paramMal,
-                                0
-                        );
-
-                this.pop =
-                        sim.getPop();
-
-                // ================= RESET =================
-
-                this.jourActuel = 0;
-                this.patientZeroCree = false;
-                this.simulationTerminee = false;
-
-                labelJour.setText(
-                        "Jour 0"
-                );
-
-                zoneParametresMaladie.setDisable(
-                        false
-                );
-
-                boutonGenererLiens.setDisable(
-                        false
-                );
-
-                // Tableau
-                tablePopulation.setItems(
-                        FXCollections.observableArrayList(
-                                pop.getIndividus()
-                        )
-                );
-
-                // Affichage
-                afficherPopulation(
-                        zoneCentrale
-                );
-
-                mettreAJourStatistiques();
-
-            } catch (NumberFormatException e) {
-
-                System.out.println(
-                        "Paramètre invalide"
-                );
-            }
-        });
+        );
 
         // ======================================================
         // GENERER LIENS
         // ======================================================
 
-        boutonGenererLiens.setOnAction(event -> {
+        boutonGenererLiens.setOnAction(
+                event -> {
 
-            if (this.pop == null) {
-                return;
-            }
+                    if (
+                            this.pop == null
+                    ) {
+                        return;
+                    }
 
-            this.pop.creationLiens();
+                    this.pop.creationLiens();
 
-            afficherLiens(
-                    zoneCentrale
-            );
+                    afficherLiens(
+                            zoneCentrale
+                    );
 
-            mettreAJourTooltips();
+                    mettreAJourTooltips();
 
-            tablePopulation.refresh();
+                    tablePopulation.refresh();
 
-            boutonGenererLiens.setDisable(
-                    true
-            );
-        });
+                    boutonGenererLiens
+                            .setDisable(true);
+                }
+        );
 
         // ======================================================
         // PANNEAU GAUCHE
@@ -467,6 +597,16 @@ public class VueSimulation extends Application {
         Scene scene =
                 new Scene(root);
 
+        // Chargement CSS
+
+        scene.getStylesheets().add(
+                getClass()
+                        .getResource(
+                                "/vue/simulation.css"
+                        )
+                        .toExternalForm()
+        );
+
         stage.setScene(
                 scene
         );
@@ -492,122 +632,169 @@ public class VueSimulation extends Application {
         VBox zoneControleSimulation =
                 new VBox(10);
 
-        this.labelJour =
-                new Label("Jour 0");
-
-        Button boutonPlay =
-                new Button("▶");
-
-        Button boutonPause =
-                new Button("⏸");
-
-        TextField champVitesse =
-                new TextField();
-
-        champVitesse.setPromptText(
-                "Jours / seconde"
+        zoneControleSimulation.getStyleClass().add(
+                "zone-controle-simulation"
         );
 
         zoneControleSimulation.setAlignment(
                 Pos.CENTER
         );
 
-        zoneControleSimulation.setStyle(
-                "-fx-border-color: transparent #999999 transparent transparent;" +
-                "-fx-border-width: 0 1 0 0;" +
-                "-fx-padding: 10;"
+        // ======================================================
+        // JOUR
+        // ======================================================
+
+        this.labelJour =
+                new Label(
+                        "Jour 0"
+                );
+
+        labelJour.getStyleClass().add(
+                "label-jour"
         );
 
         // ======================================================
         // PLAY
         // ======================================================
 
-        boutonPlay.setOnAction(event -> {
+        Button boutonPlay =
+                new Button("▶");
 
-            if (
-                    sim == null
-                    || simulationTerminee
-            ) {
-                return;
-            }
-
-            creerPatientZeroSiNecessaire();
-
-            // Champ vide = +1 jour
-            if (
-                    champVitesse
-                            .getText()
-                            .isBlank()
-            ) {
-
-                avancerUnJour();
-
-                return;
-            }
-
-            try {
-
-                double vitesse =
-                        Double.parseDouble(
-                                champVitesse
-                                        .getText()
-                        );
-
-                if (vitesse <= 0) {
-                    return;
-                }
-
-                if (
-                        timelineSimulation
-                        != null
-                ) {
-
-                    timelineSimulation.stop();
-                }
-
-                double intervalleMillis =
-                        1000.0 / vitesse;
-
-                timelineSimulation =
-                        new Timeline(
-                                new KeyFrame(
-                                        Duration.millis(
-                                                intervalleMillis
-                                        ),
-
-                                        e ->
-                                                avancerUnJour()
-                                )
-                        );
-
-                timelineSimulation.setCycleCount(
-                        Timeline.INDEFINITE
-                );
-
-                timelineSimulation.play();
-
-            } catch (
-                    NumberFormatException e
-            ) {
-
-                champVitesse.clear();
-            }
-        });
+        boutonPlay.getStyleClass().add(
+                "bouton-play"
+        );
 
         // ======================================================
         // PAUSE
         // ======================================================
 
-        boutonPause.setOnAction(event -> {
+        Button boutonPause =
+                new Button("⏸");
 
-            if (
-                    timelineSimulation
-                    != null
-            ) {
+        boutonPause.getStyleClass().add(
+                "bouton-pause"
+        );
 
-                timelineSimulation.pause();
-            }
-        });
+        // ======================================================
+        // VITESSE
+        // ======================================================
+
+        TextField champVitesse =
+                new TextField();
+
+        champVitesse.getStyleClass().add(
+                "champ-vitesse"
+        );
+
+        champVitesse.setPromptText(
+                "Jours / seconde"
+        );
+
+        // ======================================================
+        // ACTION PLAY
+        // ======================================================
+
+        boutonPlay.setOnAction(
+                event -> {
+
+                    if (
+                            sim == null
+                            || simulationTerminee
+                    ) {
+
+                        return;
+                    }
+
+                    creerPatientZeroSiNecessaire();
+
+                    // Champ vide :
+                    // un clic = +1 jour
+
+                    if (
+                            champVitesse
+                                    .getText()
+                                    .isBlank()
+                    ) {
+
+                        avancerUnJour();
+
+                        return;
+                    }
+
+                    try {
+
+                        double vitesse =
+                                Double.parseDouble(
+                                        champVitesse
+                                                .getText()
+                                );
+
+                        if (
+                                vitesse <= 0
+                        ) {
+
+                            return;
+                        }
+
+                        if (
+                                timelineSimulation
+                                != null
+                        ) {
+
+                            timelineSimulation.stop();
+                        }
+
+                        double intervalleMillis =
+                                1000.0
+                                / vitesse;
+
+                        timelineSimulation =
+                                new Timeline(
+                                        new KeyFrame(
+                                                Duration.millis(
+                                                        intervalleMillis
+                                                ),
+
+                                                e ->
+                                                        avancerUnJour()
+                                        )
+                                );
+
+                        timelineSimulation.setCycleCount(
+                                Timeline.INDEFINITE
+                        );
+
+                        timelineSimulation.play();
+
+                    } catch (
+                            NumberFormatException e
+                    ) {
+
+                        champVitesse.clear();
+                    }
+                }
+        );
+
+        // ======================================================
+        // ACTION PAUSE
+        // ======================================================
+
+        boutonPause.setOnAction(
+                event -> {
+
+                    if (
+                            timelineSimulation
+                            != null
+                    ) {
+
+                        timelineSimulation.pause();
+                    }
+                }
+        );
+
+        // ======================================================
+        // AJOUT
+        // ======================================================
 
         zoneControleSimulation
                 .getChildren()
@@ -632,19 +819,24 @@ public class VueSimulation extends Application {
                 sim == null
                 || simulationTerminee
         ) {
+
             return;
         }
 
-        if (!patientZeroCree) {
+        if (
+                !patientZeroCree
+        ) {
 
             sim.patientZero();
 
-            patientZeroCree = true;
+            patientZeroCree =
+                    true;
 
-            // On verrouille les paramètres maladie
-            zoneParametresMaladie.setDisable(
-                    true
-            );
+            // Les paramètres maladie ne peuvent
+            // plus être modifiés après lancement.
+
+            zoneParametresMaladie
+                    .setDisable(true);
 
             mettreAJourCouleurs();
 
@@ -667,6 +859,7 @@ public class VueSimulation extends Application {
                 sim == null
                 || simulationTerminee
         ) {
+
             return;
         }
 
@@ -674,7 +867,9 @@ public class VueSimulation extends Application {
 
         jourActuel++;
 
-        // ================= VRAIE SIMULATION =================
+        // ======================================================
+        // SIMULATION
+        // ======================================================
 
         sim.jPlus1(
                 jourActuel
@@ -685,7 +880,9 @@ public class VueSimulation extends Application {
                 + jourActuel
         );
 
-        // ================= MISE A JOUR UI =================
+        // ======================================================
+        // MISE A JOUR INTERFACE
+        // ======================================================
 
         mettreAJourCouleurs();
 
@@ -695,7 +892,9 @@ public class VueSimulation extends Application {
 
         mettreAJourStatistiques();
 
-        // ================= FIN AUTOMATIQUE =================
+        // ======================================================
+        // FIN AUTOMATIQUE
+        // ======================================================
 
         if (
                 sim.estTerminee(
@@ -737,6 +936,17 @@ public class VueSimulation extends Application {
         TableView<Individu> table =
                 new TableView<>();
 
+        table.getStyleClass().add(
+                "table-population"
+        );
+        table.setColumnResizePolicy(
+        		 TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS
+        );
+
+        // ======================================================
+        // ID
+        // ======================================================
+
         TableColumn<Individu, Integer> colonneId =
                 new TableColumn<>("ID");
 
@@ -748,6 +958,10 @@ public class VueSimulation extends Application {
                         )
         );
 
+        // ======================================================
+        // AGE
+        // ======================================================
+
         TableColumn<Individu, Integer> colonneAge =
                 new TableColumn<>("Âge");
 
@@ -758,6 +972,10 @@ public class VueSimulation extends Application {
                                         .getAge()
                         )
         );
+
+        // ======================================================
+        // SEXE
+        // ======================================================
 
         TableColumn<Individu, String> colonneSexe =
                 new TableColumn<>("Sexe");
@@ -771,6 +989,10 @@ public class VueSimulation extends Application {
                         )
         );
 
+        // ======================================================
+        // ETAT
+        // ======================================================
+
         TableColumn<Individu, String> colonneEtat =
                 new TableColumn<>("État");
 
@@ -783,6 +1005,10 @@ public class VueSimulation extends Application {
                         )
         );
 
+        // ======================================================
+        // DIABETE
+        // ======================================================
+
         TableColumn<Individu, Boolean> colonneDiab =
                 new TableColumn<>("Diab.");
 
@@ -794,8 +1020,14 @@ public class VueSimulation extends Application {
                         )
         );
 
+        // ======================================================
+        // CONTACTS
+        // ======================================================
+
         TableColumn<Individu, Integer> colonneContacts =
-                new TableColumn<>("Contacts");
+                new TableColumn<>(
+                        "Contacts"
+                );
 
         colonneContacts.setCellValueFactory(
                 data ->
@@ -804,6 +1036,10 @@ public class VueSimulation extends Application {
                                         .getTailleListeContacts()
                         )
         );
+
+        // ======================================================
+        // AJOUT COLONNES
+        // ======================================================
 
         table.getColumns().addAll(
                 colonneId,
@@ -839,10 +1075,12 @@ public class VueSimulation extends Application {
                         .size();
 
         double largeur =
-                zoneCentrale.getWidth();
+                zoneCentrale
+                        .getWidth();
 
         double hauteur =
-                zoneCentrale.getHeight();
+                zoneCentrale
+                        .getHeight();
 
         double centreX =
                 largeur / 2.0;
@@ -857,7 +1095,7 @@ public class VueSimulation extends Application {
                 ) * 0.42;
 
         double rayonPoint =
-                4.0;
+                6.0;
 
         double espacement =
                 rayonPoint * 2.5;
@@ -865,13 +1103,17 @@ public class VueSimulation extends Application {
         int indexIndividu =
                 0;
 
+        // ======================================================
+        // ANNEAUX
+        // ======================================================
+
         for (
                 double rayon =
                         rayonMax;
 
                 rayon > 20
-                && indexIndividu
-                < nbIndividus;
+                        && indexIndividu
+                        < nbIndividus;
 
                 rayon -=
                         espacement
@@ -894,6 +1136,10 @@ public class VueSimulation extends Application {
                             nbIndividus
                                     - indexIndividu
                     );
+
+            // ==================================================
+            // INDIVIDUS DE L'ANNEAU
+            // ==================================================
 
             for (
                     int i = 0;
@@ -918,12 +1164,16 @@ public class VueSimulation extends Application {
                 double x =
                         centreX
                         + rayon
-                        * Math.cos(angle);
+                        * Math.cos(
+                                angle
+                        );
 
                 double y =
                         centreY
                         + rayon
-                        * Math.sin(angle);
+                        * Math.sin(
+                                angle
+                        );
 
                 Circle point =
                         new Circle(
@@ -932,13 +1182,22 @@ public class VueSimulation extends Application {
                                 rayonPoint
                         );
 
-                point.setFill(
-                        couleurEtat(
-                                individu.getEtat()
-                        )
+                // Classe générique
+
+                point.getStyleClass().add(
+                        "individu"
                 );
 
-                // ================= TOOLTIP =================
+                // Classe correspondant à son état
+
+                appliquerClasseEtat(
+                        point,
+                        individu.getEtat()
+                );
+
+                // ==================================================
+                // TOOLTIP
+                // ==================================================
 
                 Tooltip tooltip =
                         new Tooltip(
@@ -963,7 +1222,9 @@ public class VueSimulation extends Application {
 
                 zoneCentrale
                         .getChildren()
-                        .add(point);
+                        .add(
+                                point
+                        );
 
                 pointsIndividus.put(
                         individu,
@@ -972,6 +1233,62 @@ public class VueSimulation extends Application {
 
                 indexIndividu++;
             }
+        }
+    }
+
+
+    // ==========================================================
+    // CLASSE CSS SELON ETAT
+    // ==========================================================
+
+    private void appliquerClasseEtat(
+            Circle point,
+            EtatSante etat
+    ) {
+
+        // On enlève les anciennes classes d'état
+
+        point.getStyleClass().removeAll(
+                "individu-sain",
+                "individu-incubation",
+                "individu-malade",
+                "individu-gueri",
+                "individu-mort"
+        );
+
+        // Puis on applique la nouvelle
+
+        switch (etat) {
+
+            case SAIN ->
+
+                    point.getStyleClass().add(
+                            "individu-sain"
+                    );
+
+            case INCUBATION ->
+
+                    point.getStyleClass().add(
+                            "individu-incubation"
+                    );
+
+            case MALADE ->
+
+                    point.getStyleClass().add(
+                            "individu-malade"
+                    );
+
+            case GUERI ->
+
+                    point.getStyleClass().add(
+                            "individu-gueri"
+                    );
+
+            case MORT ->
+
+                    point.getStyleClass().add(
+                            "individu-mort"
+                    );
         }
     }
 
@@ -999,6 +1316,8 @@ public class VueSimulation extends Application {
                     individu.getContacts()
             ) {
 
+                // On évite A-B puis B-A
+
                 if (
                         individu.getId()
                         < contact.getId()
@@ -1013,26 +1332,24 @@ public class VueSimulation extends Application {
                             new Line(
                                     pointA.getCenterX(),
                                     pointA.getCenterY(),
+
                                     pointB.getCenterX(),
                                     pointB.getCenterY()
                             );
 
-                    ligne.setStroke(
-                            Color.rgb(
-                                    80,
-                                    80,
-                                    80,
-                                    0.35
-                            )
+                    // Apparence entièrement dans CSS
+
+                    ligne.getStyleClass().add(
+                            "lien-contact"
                     );
 
-                    ligne.setStrokeWidth(
-                            0.6
-                    );
+                    // Les liens ne captent pas la souris
 
                     ligne.setMouseTransparent(
                             true
                     );
+
+                    // Toujours derrière les points
 
                     zoneCentrale
                             .getChildren()
@@ -1047,40 +1364,15 @@ public class VueSimulation extends Application {
 
 
     // ==========================================================
-    // COULEURS ETATS
-    // ==========================================================
-
-    private Color couleurEtat(
-            EtatSante etat
-    ) {
-
-        return switch (etat) {
-
-            case SAIN ->
-                    Color.GREEN;
-
-            case INCUBATION ->
-                    Color.ORANGE;
-
-            case MALADE ->
-                    Color.RED;
-
-            case GUERI ->
-                    Color.DODGERBLUE;
-
-            case MORT ->
-                    Color.DARKGRAY;
-        };
-    }
-
-
-    // ==========================================================
-    // MISE A JOUR COULEURS
+    // MISE A JOUR COULEURS / CLASSES
     // ==========================================================
 
     private void mettreAJourCouleurs() {
 
-        if (pop == null) {
+        if (
+                pop == null
+        ) {
+
             return;
         }
 
@@ -1094,12 +1386,13 @@ public class VueSimulation extends Application {
                             individu
                     );
 
-            if (point != null) {
+            if (
+                    point != null
+            ) {
 
-                point.setFill(
-                        couleurEtat(
-                                individu.getEtat()
-                        )
+                appliquerClasseEtat(
+                        point,
+                        individu.getEtat()
                 );
             }
         }
@@ -1112,15 +1405,27 @@ public class VueSimulation extends Application {
 
     private void mettreAJourStatistiques() {
 
-        if (pop == null) {
+        if (
+                pop == null
+        ) {
+
             return;
         }
 
-        int sains = 0;
-        int incubation = 0;
-        int malades = 0;
-        int gueris = 0;
-        int morts = 0;
+        int sains =
+                0;
+
+        int incubation =
+                0;
+
+        int malades =
+                0;
+
+        int gueris =
+                0;
+
+        int morts =
+                0;
 
         for (
                 Individu individu :
@@ -1132,22 +1437,27 @@ public class VueSimulation extends Application {
             ) {
 
                 case SAIN:
+
                     sains++;
                     break;
 
                 case INCUBATION:
+
                     incubation++;
                     break;
 
                 case MALADE:
+
                     malades++;
                     break;
 
                 case GUERI:
+
                     gueris++;
                     break;
 
                 case MORT:
+
                     morts++;
                     break;
             }
@@ -1203,8 +1513,8 @@ public class VueSimulation extends Application {
                 + "\nDiabétique : "
                 + (
                         individu.isDiabetique()
-                        ? "Oui"
-                        : "Non"
+                                ? "Oui"
+                                : "Non"
                 )
 
                 + "\nContacts : "
@@ -1219,7 +1529,10 @@ public class VueSimulation extends Application {
 
     private void mettreAJourTooltips() {
 
-        if (pop == null) {
+        if (
+                pop == null
+        ) {
+
             return;
         }
 
@@ -1233,7 +1546,9 @@ public class VueSimulation extends Application {
                             individu
                     );
 
-            if (tooltip != null) {
+            if (
+                    tooltip != null
+            ) {
 
                 tooltip.setText(
                         texteTooltip(
@@ -1254,127 +1569,254 @@ public class VueSimulation extends Application {
         VBox zone =
                 new VBox(8);
 
-        zone.setPadding(
-                new Insets(10)
+        zone.getStyleClass().add(
+                "zone-parametres-maladie"
         );
+
+        // ======================================================
+        // TITRE
+        // ======================================================
 
         Label titre =
                 new Label(
                         "PARAMÈTRES MALADIE"
                 );
 
-        // ================= TRANSMISSION =================
+        titre.getStyleClass().add(
+                "titre-section"
+        );
+
+        // ======================================================
+        // TRANSMISSION
+        // ======================================================
 
         Label labelTransmission =
                 new Label(
-                        "Transmission"
+                        "Transmission (%)"
                 );
 
+        labelTransmission
+                .getStyleClass()
+                .add(
+                        "label-parametre"
+                );
+        labelTransmission.getStyleClass().add("label-maladie");
         champTransmission =
                 new TextField(
                         "0.15"
                 );
 
-        // ================= GUERISON =================
+        champTransmission
+                .getStyleClass()
+                .add(
+                        "champ-maladie"
+                );
+
+        // ======================================================
+        // GUERISON
+        // ======================================================
 
         Label labelGuerison =
                 new Label(
-                        "Guérison"
+                        "Guérison (%)"
                 );
+
+        labelGuerison
+                .getStyleClass()
+                .add(
+                        "label-parametre"
+                );
+        labelGuerison
+	        .getStyleClass()
+	        .add("label-maladie");
 
         champGuerison =
                 new TextField(
                         "0.85"
                 );
 
-        // ================= INCUBATION =================
+        champGuerison
+                .getStyleClass()
+                .add(
+                        "champ-maladie"
+                );
+
+        // ======================================================
+        // INCUBATION
+        // ======================================================
 
         Label labelIncubation =
                 new Label(
-                        "Incubation"
+                        "Incubation (j)"
                 );
 
+        labelIncubation
+                .getStyleClass()
+                .add(
+                        "label-parametre"
+                );
+        labelIncubation.getStyleClass().add("label-maladie");
         champIncubation =
                 new TextField(
                         "5"
                 );
 
-        // ================= CONTAGION =================
+        champIncubation
+                .getStyleClass()
+                .add(
+                        "champ-maladie"
+                );
+
+        // ======================================================
+        // CONTAGION
+        // ======================================================
 
         Label labelContagion =
                 new Label(
-                        "Contagion"
+                        "Contagion (j)"
                 );
 
+        labelContagion
+                .getStyleClass()
+                .add(
+                        "label-parametre"
+                );
+        labelContagion.getStyleClass().add("label-maladie");
         champContagion =
                 new TextField(
                         "4"
                 );
 
-        // ================= REINFECTION =================
+        champContagion
+                .getStyleClass()
+                .add(
+                        "champ-maladie"
+                );
+
+        // ======================================================
+        // REINFECTION
+        // ======================================================
 
         Label labelReinfection =
                 new Label(
-                        "Réinfection"
+                        "Réinfection (%)"
                 );
 
+        labelReinfection
+                .getStyleClass()
+                .add(
+                        "label-parametre"
+                );
+        labelReinfection.getStyleClass().add("label-maladie");
         champReinfection =
                 new TextField(
                         "0.20"
                 );
 
-        // ================= DIABETE =================
+        champReinfection
+                .getStyleClass()
+                .add(
+                        "champ-maladie"
+                );
+
+        // ======================================================
+        // DIABETE
+        // ======================================================
 
         Label labelDiabete =
                 new Label(
-                        "Risque diabète"
+                        "Risque diabète (x)"
+                );
+
+        labelDiabete
+                .getStyleClass()
+                .add(
+                        "label-parametre"
                 );
 
         champRisqueDiabete =
                 new TextField(
                         "1.30"
                 );
+        labelDiabete.getStyleClass().add("label-maladie");
+        champRisqueDiabete
+                .getStyleClass()
+                .add(
+                        "champ-maladie"
+                );
 
-        // ================= LIGNES =================
+        // ======================================================
+        // LIGNE 1
+        // ======================================================
 
         HBox ligne1 =
                 new HBox(
                         10,
+
                         labelTransmission,
                         champTransmission,
+
                         labelGuerison,
                         champGuerison
                 );
 
+        ligne1.getStyleClass().add(
+                "ligne-parametres"
+        );
+
+        ligne1.setAlignment(
+                Pos.CENTER_LEFT
+        );
+
+        // ======================================================
+        // LIGNE 2
+        // ======================================================
+
         HBox ligne2 =
                 new HBox(
                         10,
+
                         labelIncubation,
                         champIncubation,
+
                         labelContagion,
                         champContagion
                 );
 
-        HBox ligne3 =
-                new HBox(
-                        10,
-                        labelReinfection,
-                        champReinfection,
-                        labelDiabete,
-                        champRisqueDiabete
-                );
-
-        ligne1.setAlignment(
-                Pos.CENTER_LEFT
+        ligne2.getStyleClass().add(
+                "ligne-parametres"
         );
 
         ligne2.setAlignment(
                 Pos.CENTER_LEFT
         );
 
+        // ======================================================
+        // LIGNE 3
+        // ======================================================
+
+        HBox ligne3 =
+                new HBox(
+                        10,
+
+                        labelReinfection,
+                        champReinfection,
+
+                        labelDiabete,
+                        champRisqueDiabete
+                );
+
+        ligne3.getStyleClass().add(
+                "ligne-parametres"
+        );
+
         ligne3.setAlignment(
                 Pos.CENTER_LEFT
         );
+
+        // ======================================================
+        // AJOUT
+        // ======================================================
 
         zone.getChildren().addAll(
                 titre,

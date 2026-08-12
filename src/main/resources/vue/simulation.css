@@ -1,0 +1,393 @@
+/* ========================================================= */
+/* GLOBAL */
+/* ========================================================= */
+
+.root-simulation {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 14px;
+
+    -fx-background-color: #f5f6f8;
+}
+
+
+/* ========================================================= */
+/* TITRES */
+/* ========================================================= */
+
+.titre-section {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #252a30;
+}
+
+.label-parametre {
+    -fx-font-size: 13px;
+    -fx-text-fill: #586069;
+}
+
+
+/* ========================================================= */
+/* PANNEAU GAUCHE */
+/* ========================================================= */
+
+.panneau-gauche {
+    -fx-padding: 20px;
+
+    -fx-background-color: #fafafa;
+
+    -fx-border-color:
+        transparent #d8dce1 transparent transparent;
+
+    -fx-border-width: 0 1px 0 0;
+}
+
+
+/* ========================================================= */
+/* PANNEAU DROIT */
+/* ========================================================= */
+
+.panneau-droit {
+    -fx-background-color: #f5f6f8;
+}
+
+
+/* ========================================================= */
+/* ZONE POPULATION */
+/* ========================================================= */
+
+.zone-population {
+    -fx-background-color: #eef0f2;
+
+    -fx-background-radius: 8px;
+}
+
+
+/* ========================================================= */
+/* ZONE INFORMATIONS BASSE */
+/* ========================================================= */
+
+.zone-informations {
+    -fx-background-color: #fafafa;
+
+    -fx-border-color: #c8ccd1;
+    -fx-border-width: 1px;
+
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}
+
+
+/* ========================================================= */
+/* TEXT FIELDS */
+/* ========================================================= */
+
+.text-field {
+    -fx-font-size: 14px;
+    -fx-padding: 6px 8px;
+
+    -fx-background-color: white;
+
+    -fx-border-color: #bfc4ca;
+    -fx-border-width: 1px;
+
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+}
+
+.text-field:focused {
+    -fx-border-color: #666d75;
+    -fx-border-width: 1px;
+}
+
+.champ-parametre {
+    -fx-font-size: 14px;
+}
+
+.label-maladie {
+    -fx-min-width: 130px;
+    -fx-pref-width: 130px;
+    -fx-alignment: center-right;
+}
+
+.champ-maladie {
+    -fx-min-width: 115px;
+    -fx-pref-width: 115px;
+}
+
+.champ-vitesse {
+    -fx-pref-column-count: 8;
+    -fx-alignment: center;
+}
+
+
+/* ========================================================= */
+/* BOUTONS */
+/* ========================================================= */
+
+.button {
+    -fx-font-size: 13px;
+    -fx-padding: 6px 12px;
+
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+
+    -fx-cursor: hand;
+}
+
+.bouton-principal {
+    -fx-background-color: #3f464d;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.bouton-principal:hover {
+    -fx-background-color: #2f353a;
+}
+
+.bouton-secondaire {
+    -fx-background-color: #e7e9ec;
+    -fx-text-fill: #30343a;
+
+    -fx-border-color: #c7cbd0;
+    -fx-border-width: 1px;
+}
+
+.bouton-secondaire:hover {
+    -fx-background-color: #d9dde1;
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
+
+
+/* ========================================================= */
+/* PLAY / PAUSE */
+/* ========================================================= */
+
+.zone-controle-simulation {
+    -fx-padding: 14px;
+
+    -fx-border-color:
+        transparent #d5d9de transparent transparent;
+
+    -fx-border-width: 0 1px 0 0;
+}
+
+.label-jour {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+
+    -fx-text-fill: #343a40;
+}
+
+.bouton-play {
+    -fx-font-size: 18px;
+
+    -fx-min-width: 38px;
+    -fx-min-height: 32px;
+
+    -fx-background-color: #3f464d;
+    -fx-text-fill: white;
+
+    -fx-background-radius: 2px;
+}
+
+.bouton-play:hover {
+    -fx-background-color: #2f353a;
+}
+
+.bouton-pause {
+    -fx-font-size: 14px;
+
+    -fx-min-width: 34px;
+    -fx-min-height: 30px;
+
+    -fx-background-color: #e1e3e6;
+    -fx-text-fill: #30343a;
+
+    -fx-border-color: #c7cbd0;
+    -fx-border-width: 1px;
+
+    -fx-background-radius: 2px;
+    -fx-border-radius: 2px;
+}
+
+.bouton-pause:hover {
+    -fx-background-color: #d1d5db;
+}
+
+
+/* ========================================================= */
+/* STATISTIQUES */
+/* ========================================================= */
+
+.zone-stats {
+    -fx-padding: 5px 0 5px 0;
+}
+
+.ligne-stats {
+    -fx-alignment: center;
+}
+
+.stat-sain,
+.stat-incubation,
+.stat-malade,
+.stat-gueri,
+.stat-mort {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.stat-sain {
+    -fx-text-fill: #15803d;
+}
+
+.stat-incubation {
+    -fx-text-fill: #d97706;
+}
+
+.stat-malade {
+    -fx-text-fill: #dc2626;
+}
+
+.stat-gueri {
+    -fx-text-fill: #1e88e5;
+}
+
+.stat-mort {
+    -fx-text-fill: #6b7280;
+}
+
+
+/* ========================================================= */
+/* PARAMETRES MALADIE */
+/* ========================================================= */
+
+.zone-parametres-maladie {
+    -fx-padding: 14px 18px;
+}
+
+.ligne-parametres {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+
+
+/* ========================================================= */
+/* SEPARATEURS */
+/* ========================================================= */
+
+.separateur-section .line {
+    -fx-border-color:
+        #dde1e6 transparent transparent transparent;
+
+    -fx-border-width: 1px 0 0 0;
+}
+
+
+/* ========================================================= */
+/* TABLEAU POPULATION */
+/* ========================================================= */
+
+.table-population {
+    -fx-background-color: white;
+
+    -fx-border-color: #c8ccd1;
+    -fx-border-width: 1px;
+
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+}
+
+.table-population .column-header-background {
+    -fx-background-color: #f0f2f5;
+}
+
+.table-population .column-header {
+    -fx-background-color: transparent;
+
+    -fx-font-weight: bold;
+
+    -fx-padding: 7px;
+}
+
+.table-population .table-cell {
+    -fx-padding: 6px 8px;
+
+    -fx-border-color:
+        transparent transparent #eeeeee transparent;
+}
+
+.table-population .table-row-cell {
+    -fx-cell-size: 30px;
+    -fx-background-color: white;
+}
+
+.table-population .table-row-cell:odd {
+    -fx-background-color: #fafafa;
+}
+
+.table-population .table-row-cell:selected {
+    -fx-background-color: #dbeafe;
+}
+
+.table-population .table-row-cell:selected .text {
+    -fx-fill: #1e3a5f;
+}
+
+
+/* ========================================================= */
+/* TOOLTIP */
+/* ========================================================= */
+
+.tooltip {
+    -fx-font-size: 13px;
+
+    -fx-background-color: #252a30;
+    -fx-text-fill: white;
+
+    -fx-padding: 8px 10px;
+
+    -fx-background-radius: 6px;
+}
+
+
+/* ========================================================= */
+/* INDIVIDUS */
+/* ========================================================= */
+
+.individu {
+    -fx-stroke: rgba(255, 255, 255, 0.35);
+    -fx-stroke-width: 0.5px;
+}
+
+.individu-sain {
+    -fx-fill: #15803d;
+}
+
+.individu-incubation {
+    -fx-fill: #f59e0b;
+}
+
+.individu-malade {
+    -fx-fill: #dc2626;
+}
+
+.individu-gueri {
+    -fx-fill: #1e88e5;
+}
+
+.individu-mort {
+    -fx-fill: #9ca3af;
+}
+
+
+/* ========================================================= */
+/* LIENS ENTRE INDIVIDUS */
+/* ========================================================= */
+
+.lien-contact {
+    -fx-stroke: rgba(75, 85, 99, 0.28);
+    -fx-stroke-width: 0.6px;
+}

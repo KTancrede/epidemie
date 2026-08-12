@@ -1,7 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="
+             http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,6 +13,7 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
         <javafx.version>21</javafx.version>
     </properties>
 
@@ -26,24 +28,61 @@
     </dependencies>
 
     <build>
+
         <plugins>
+
+            <!-- ================= COMPILATION ================= -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
+
+                <configuration>
+                    <release>21</release>
+                </configuration>
             </plugin>
+
+            <!-- ================= JAVAFX ================= -->
 
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
+
                 <configuration>
-                    <mainClass>epidemie/vue.VueSimulation</mainClass>
+
+                    <!-- Module + classe principale -->
+                    <mainClass>
+                        epidemie/vue.VueSimulation
+                    </mainClass>
+
+                    <!-- Nom du runtime généré -->
+                    <jlinkImageName>
+                        epidemie
+                    </jlinkImageName>
+
+                    <!-- Nom du launcher -->
+                    <launcher>
+                        epidemie
+                    </launcher>
+
+                    <!-- Réduction du runtime -->
+                    <stripDebug>true</stripDebug>
+
+                    <noHeaderFiles>true</noHeaderFiles>
+
+                    <noManPages>true</noManPages>
+
+                    <!-- Compression -->
+                    <compress>2</compress>
+
                 </configuration>
+
             </plugin>
 
         </plugins>
+
     </build>
 
 </project>
