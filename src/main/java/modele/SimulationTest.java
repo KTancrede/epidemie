@@ -6,7 +6,7 @@ import parametres.TestParamPop;
 public class SimulationTest {
 	
 	public static void main(String[] args) {
-		Simulation sim = new Simulation(new TestParamPop(2000), new TestParamMal(), 1000);
+		Simulation sim = new Simulation(new TestParamPop(20), new TestParamMal(), 20);
 		Population pop = sim.getPop();
 		
 		System.out.println("===================== MISE EN PLACE POPULATION =====================");
