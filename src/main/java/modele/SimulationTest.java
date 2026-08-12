@@ -1,7 +1,7 @@
 package modele;
 
-import TestParamMal;
-import TestParamPop;
+import parametres.TestParamMal;
+import parametres.TestParamPop;
 
 public class SimulationTest {
 	

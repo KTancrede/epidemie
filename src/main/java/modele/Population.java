@@ -2,7 +2,7 @@ package modele;
 
 import java.util.ArrayList;
 
-import IParametresPopulation;
+import parametres.IParametresPopulation;
 
 public class Population {
 
