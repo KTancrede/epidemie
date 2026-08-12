@@ -1,0 +1,153 @@
+name: Build Simépie
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: windows
+          - os: macos-latest
+            platform: macos
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Vérifier Java
+        run: |
+          java -version
+          javac -version
+          jpackage --version
+
+      # =========================================================
+      # LINUX
+      # =========================================================
+
+      - name: Installer dépendances Linux
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm fakeroot binutils
+
+      - name: Build Maven Linux
+        if: matrix.platform == 'linux'
+        run: mvn -B clean package
+
+      - name: Créer runtime Linux
+        if: matrix.platform == 'linux'
+        run: mvn -B javafx:jlink
+
+      - name: Créer DEB
+        if: matrix.platform == 'linux'
+        run: |
+          mkdir -p target/installers
+
+          jpackage \
+            --type deb \
+            --name "Simepie" \
+            --app-version 1.0.0 \
+            --runtime-image target/epidemie \
+            --module epidemie/vue.VueSimulation \
+            --icon src/ressources/images/logo.png \
+            --dest target/installers \
+            --linux-package-name simepie \
+            --linux-shortcut \
+            --description "Simulateur de propagation épidémique"
+
+      - name: Créer RPM
+        if: matrix.platform == 'linux'
+        run: |
+          jpackage \
+            --type rpm \
+            --name "Simepie" \
+            --app-version 1.0.0 \
+            --runtime-image target/epidemie \
+            --module epidemie/vue.VueSimulation \
+            --icon src/ressources/images/logo.png \
+            --dest target/installers \
+            --linux-package-name simepie \
+            --linux-shortcut \
+            --description "Simulateur de propagation épidémique"
+
+      # =========================================================
+      # WINDOWS
+      # =========================================================
+
+      - name: Build Maven Windows
+        if: matrix.platform == 'windows'
+        run: mvn -B clean package
+
+      - name: Créer runtime Windows
+        if: matrix.platform == 'windows'
+        run: mvn -B javafx:jlink
+
+      - name: Créer EXE Windows
+        if: matrix.platform == 'windows'
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path target/installers
+
+          jpackage `
+            --type exe `
+            --name "Simepie" `
+            --app-version 1.0.0 `
+            --runtime-image target/epidemie `
+            --module epidemie/vue.VueSimulation `
+            --dest target/installers `
+            --description "Simulateur de propagation épidémique" `
+            --win-menu `
+            --win-shortcut
+
+      # =========================================================
+      # MACOS
+      # =========================================================
+
+      - name: Build Maven macOS
+        if: matrix.platform == 'macos'
+        run: mvn -B clean package
+
+      - name: Créer runtime macOS
+        if: matrix.platform == 'macos'
+        run: mvn -B javafx:jlink
+
+      - name: Créer DMG macOS
+        if: matrix.platform == 'macos'
+        run: |
+          mkdir -p target/installers
+
+          jpackage \
+            --type dmg \
+            --name "Simepie" \
+            --app-version 1.0.0 \
+            --runtime-image target/epidemie \
+            --module epidemie/vue.VueSimulation \
+            --dest target/installers \
+            --description "Simulateur de propagation épidémique"
+
+      # =========================================================
+      # ARTEFACTS
+      # =========================================================
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: Simepie-${{ matrix.platform }}
+          path: target/installers/*
