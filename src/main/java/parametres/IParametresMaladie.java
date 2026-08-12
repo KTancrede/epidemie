@@ -10,4 +10,5 @@ public interface IParametresMaladie {
 	public int dureeContagion();
 	public double facteurRisqueAge(int age);
 	public double facteurRisqueDiabete();
+	double probabiliteReinfection();
 }

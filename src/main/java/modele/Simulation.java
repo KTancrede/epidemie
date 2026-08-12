@@ -61,15 +61,38 @@ public class Simulation {
 	                && joursInfecte < paramMal.dureeIncubation()
 	                        + paramMal.dureeContagion()) {
 
-	            for (Individu contact : malade.getContacts()) {
+	        	for (Individu contact : malade.getContacts()) {
 
-	                if (contact.getEtat() == EtatSante.SAIN
-	                        && Math.random() <= paramMal.probabiliteTransmission()) {
+	        	    // ================= PERSONNE SAINE =================
 
-	                    contact.setEtat(EtatSante.INCUBATION, jourSim);
-	                    nouveauxMalades.add(contact);
-	                }
-	            }
+	        	    if (contact.getEtat() == EtatSante.SAIN) {
+
+	        	        if (Math.random() <= paramMal.probabiliteTransmission()) {
+
+	        	            contact.setEtat(EtatSante.INCUBATION, jourSim);
+	        	            contact.setJoursDepuisInfection(0);
+
+	        	            nouveauxMalades.add(contact);
+	        	        }
+	        	    }
+
+	        	    // ================= PERSONNE GUERIE =================
+
+	        	    else if (contact.getEtat() == EtatSante.GUERI) {
+
+	        	        double probaReinfection =
+	        	                paramMal.probabiliteTransmission()
+	        	                * paramMal.probabiliteReinfection();
+
+	        	        if (Math.random() <= probaReinfection) {
+
+	        	            contact.setEtat(EtatSante.INCUBATION, jourSim);
+	        	            contact.setJoursDepuisInfection(0);
+
+	        	            nouveauxMalades.add(contact);
+	        	        }
+	        	    }
+	        	}
 	        }
 
 	        // Fin de la maladie

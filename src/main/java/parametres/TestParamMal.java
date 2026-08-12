@@ -48,4 +48,8 @@ public class TestParamMal implements IParametresMaladie{
 	public double facteurRisqueDiabete() {
 		return 1.3;
 	}
+	@Override
+	public double probabiliteReinfection() {
+	    return 0.20;
+	}
 }

@@ -39,1001 +39,782 @@ import parametres.TestParamPop;
 
 public class VueSimulation extends Application {
 
-    // ==========================================================
-    // MODELE
-    // ==========================================================
+	// ==========================================================
+	// MODELE
+	// ==========================================================
 
-    private Simulation sim;
-    private Population pop;
+	private Simulation sim;
+	private Population pop;
 
-    // ==========================================================
-    // SIMULATION
-    // ==========================================================
+	// ==========================================================
+	// SIMULATION
+	// ==========================================================
 
-    private int jourActuel = 0;
-    private boolean patientZeroCree = false;
+	private int jourActuel = 0;
+	private boolean patientZeroCree = false;
 
-    private Timeline timelineSimulation;
+	private Timeline timelineSimulation;
 
-    // ==========================================================
-    // ELEMENTS GRAPHIQUES
-    // ==========================================================
+	// ==========================================================
+	// ELEMENTS GRAPHIQUES
+	// ==========================================================
 
-    private final Map<Individu, Circle> pointsIndividus =
-            new HashMap<>();
+	private final Map<Individu, Circle> pointsIndividus = new HashMap<>();
 
-    private final Map<Individu, Tooltip> tooltipsIndividus =
-            new HashMap<>();
+	private final Map<Individu, Tooltip> tooltipsIndividus = new HashMap<>();
 
-    private Label labelJour;
+	private Label labelJour;
 
-    private TableView<Individu> tablePopulation;
+	private TableView<Individu> tablePopulation;
+	private Label labelSains;
+	private Label labelIncubation;
+	private Label labelMalades;
+	private Label labelGueris;
+	private Label labelMorts;
 
+	@Override
+	public void start(Stage stage) {
 
-    @Override
-    public void start(Stage stage) {
+		BorderPane root = new BorderPane();
 
-        BorderPane root = new BorderPane();
+		// ======================================================
+		// PANNEAU GAUCHE
+		// ======================================================
 
-        // ======================================================
-        // PANNEAU GAUCHE
-        // ======================================================
+		VBox panneauGauche = new VBox(12);
 
-        VBox panneauGauche = new VBox(12);
+		panneauGauche.prefWidthProperty().bind(root.widthProperty().multiply(0.28));
 
-        panneauGauche.prefWidthProperty()
-                .bind(root.widthProperty().multiply(0.28));
+		panneauGauche.setStyle("-fx-border-color: transparent gray transparent transparent;"
+				+ "-fx-border-width: 0 1 0 0;" + "-fx-padding: 20;");
 
-        panneauGauche.setStyle(
-                "-fx-border-color: transparent gray transparent transparent;" +
-                "-fx-border-width: 0 1 0 0;" +
-                "-fx-padding: 20;"
-        );
+		// ======================================================
+		// PANNEAU DROIT
+		// ======================================================
 
-        // ======================================================
-        // PANNEAU DROIT
-        // ======================================================
+		VBox panneauDroit = new VBox(10);
 
-        VBox panneauDroit = new VBox(10);
+		Pane zoneCentrale = new Pane();
 
-        Pane zoneCentrale = new Pane();
+		HBox zoneInformations = new HBox();
 
-        HBox zoneInformations = new HBox();
+		zoneCentrale.setStyle("-fx-background-color: #EEEEEE;");
 
-        zoneCentrale.setStyle(
-                "-fx-background-color: #EEEEEE;"
-        );
+		zoneInformations.setStyle("-fx-background-color: #f4f4f4;" + "-fx-border-color: #999999;"
+				+ "-fx-border-width: 1;" + "-fx-border-radius: 5;" + "-fx-background-radius: 5;");
 
-        zoneInformations.setStyle(
-                "-fx-background-color: #f4f4f4;" +
-                "-fx-border-color: #999999;" +
-                "-fx-border-width: 1;" +
-                "-fx-border-radius: 5;" +
-                "-fx-background-radius: 5;"
-        );
+		zoneCentrale.prefHeightProperty().bind(panneauDroit.heightProperty().multiply(0.80));
 
-        zoneCentrale.prefHeightProperty()
-                .bind(
-                        panneauDroit
-                                .heightProperty()
-                                .multiply(0.80)
-                );
+		zoneInformations.prefHeightProperty().bind(panneauDroit.heightProperty().multiply(0.20));
 
-        zoneInformations.prefHeightProperty()
-                .bind(
-                        panneauDroit
-                                .heightProperty()
-                                .multiply(0.20)
-                );
+		VBox.setMargin(zoneInformations, new Insets(10));
 
-        VBox.setMargin(
-                zoneInformations,
-                new Insets(10)
-        );
+		panneauDroit.getChildren().addAll(zoneCentrale, zoneInformations);
 
-        panneauDroit.getChildren().addAll(
-                zoneCentrale,
-                zoneInformations
-        );
+		// ======================================================
+		// CONTROLES SIMULATION
+		// ======================================================
 
-        // ======================================================
-        // CONTROLES SIMULATION
-        // ======================================================
+		VBox zoneControleSimulation = creerControleSimulation();
 
-        VBox zoneControleSimulation =
-                creerControleSimulation();
+		zoneControleSimulation.prefWidthProperty().bind(zoneInformations.widthProperty().multiply(0.15));
 
-        zoneControleSimulation.prefWidthProperty()
-                .bind(
-                        zoneInformations
-                                .widthProperty()
-                                .multiply(0.15)
-                );
+		Pane zoneStatistiques = new Pane();
+		//VBox zoneStatistiques = creerZoneStatistiques();
+		HBox.setHgrow(zoneStatistiques, Priority.ALWAYS);
 
-        Pane zoneStatistiques = new Pane();
+		zoneInformations.getChildren().addAll(zoneControleSimulation, zoneStatistiques);
 
-        HBox.setHgrow(
-                zoneStatistiques,
-                Priority.ALWAYS
-        );
+		// ======================================================
+		// PARAMETRES POPULATION
+		// ======================================================
 
-        zoneInformations.getChildren().addAll(
-                zoneControleSimulation,
-                zoneStatistiques
-        );
+		Label titrePopulation = new Label("PARAMÈTRES POPULATION");
 
-        // ======================================================
-        // PARAMETRES POPULATION
-        // ======================================================
+		Label labelTaille = new Label("Taille de la population");
 
-        Label titrePopulation =
-                new Label("PARAMÈTRES POPULATION");
+		TextField champTaille = new TextField();
 
-        Label labelTaille =
-                new Label("Taille de la population");
+		Button boutonGenererPopulation = new Button("Générer la population");
 
-        TextField champTaille =
-                new TextField();
+		Button boutonGenererLiens = new Button("Générer les liens");
+		boutonGenererLiens.setDisable(true);
+		
+		// Entrée dans le champ = Générer la population
+		champTaille.setOnAction(event ->
+		        boutonGenererPopulation.fire()
+		);
+
+		// Les deux boutons sur la même ligne
+		HBox ligneBoutons = new HBox(10);
 
-        Button boutonGenererPopulation =
-                new Button("Générer la population");
+		ligneBoutons.getChildren().addAll(
+		        boutonGenererPopulation,
+		        boutonGenererLiens
+		);
 
-        champTaille.setOnAction(event ->
-                boutonGenererPopulation.fire()
-        );
+		// Séparation entre les contrôles et les statistiques
+		Separator separateur1 = new Separator();
 
-        Separator separateur1 =
-                new Separator();
+		// ======================================================
+		// 
+		// ======================================================
 
-        // ======================================================
-        // LIENS
-        // ======================================================
+		
 
-        Label titreReseau =
-                new Label("Réseau de contacts");
+		// ======================================================
+		// STATUT Statistique
+		// ======================================================
+		labelSains = new Label("Sains : 0");
+		labelIncubation = new Label("Incubation : 0");
+		labelMalades = new Label("Malades : 0");
+		labelGueris = new Label("Guéris : 0");
+		labelMorts = new Label("Morts : 0");
+		
+		labelSains.setTextFill(couleurEtat(EtatSante.SAIN));
+		labelIncubation.setTextFill(couleurEtat(EtatSante.INCUBATION));
+		labelMalades.setTextFill(couleurEtat(EtatSante.MALADE));
+		labelGueris.setTextFill(couleurEtat(EtatSante.GUERI));
+		labelMorts.setTextFill(couleurEtat(EtatSante.MORT));
+		
+		HBox ligneStats1 = new HBox(30);
+		ligneStats1.setAlignment(Pos.CENTER);
+		ligneStats1.getChildren().addAll(
+		        labelSains,
+		        labelMalades,
+		        labelIncubation
+		);
 
-        Button boutonGenererLiens =
-                new Button("Générer les liens");
+		HBox ligneStats2 = new HBox(30);
+		ligneStats2.setAlignment(Pos.CENTER);
+		ligneStats2.getChildren().addAll(
+		        labelGueris,
+		        labelMorts
+		);
 
-        boutonGenererLiens.setDisable(true);
+		VBox zoneStats = new VBox(8);
+		zoneStats.getChildren().addAll(
+		        ligneStats1,
+		        ligneStats2
+		);
 
-        Separator separateur2 =
-                new Separator();
+		Separator separateur3 = new Separator();
 
-        // ======================================================
-        // STATUT
-        // ======================================================
+		// ======================================================
+		// TABLEAU
+		// ======================================================
 
-        Label statutPopulation =
-                new Label("Population : non générée");
+		this.tablePopulation = creerTablePopulation();
 
-        Label statutLiens =
-                new Label("Liens générés : non");
+		VBox.setVgrow(tablePopulation, Priority.ALWAYS);
 
-        Separator separateur3 =
-                new Separator();
+		// ======================================================
+		// GENERER POPULATION
+		// ======================================================
 
-        // ======================================================
-        // TABLEAU
-        // ======================================================
+		boutonGenererPopulation.setOnAction(event -> {
 
-        this.tablePopulation =
-                creerTablePopulation();
+			try {
 
-        VBox.setVgrow(
-                tablePopulation,
-                Priority.ALWAYS
-        );
+				int taille = Integer.parseInt(champTaille.getText());
 
-        // ======================================================
-        // GENERER POPULATION
-        // ======================================================
+				if (taille <= 0) {
 
-        boutonGenererPopulation.setOnAction(event -> {
 
-            try {
+					return;
+				}
 
-                int taille =
-                        Integer.parseInt(
-                                champTaille.getText()
-                        );
+				// Arrêt d'une éventuelle simulation en cours
+				if (timelineSimulation != null) {
+					timelineSimulation.stop();
+				}
 
-                if (taille <= 0) {
+				Individu.resetCompteurID();
 
-                    statutPopulation.setText(
-                            "Taille invalide"
-                    );
+				IParametresPopulation paramPop = new TestParamPop(taille);
 
-                    return;
-                }
+				// Création de la vraie simulation
+				this.sim = new Simulation(paramPop, new TestParamMal(), 0);
 
-                // Arrêt d'une éventuelle simulation en cours
-                if (timelineSimulation != null) {
-                    timelineSimulation.stop();
-                }
+				// On récupère sa population
+				this.pop = sim.getPop();
 
-                Individu.resetCompteurID();
+				// Remise à zéro de la simulation
+				this.jourActuel = 0;
+				this.patientZeroCree = false;
 
-                IParametresPopulation paramPop =
-                        new TestParamPop(taille);
+				labelJour.setText("Jour 0");
 
-                // Création de la vraie simulation
-                this.sim =
-                        new Simulation(
-                                paramPop,
-                                new TestParamMal(),
-                                0
-                        );
+				
 
-                // On récupère sa population
-                this.pop =
-                        sim.getPop();
+				
 
-                // Remise à zéro de la simulation
-                this.jourActuel = 0;
-                this.patientZeroCree = false;
+				boutonGenererLiens.setDisable(false);
 
-                labelJour.setText("Jour 0");
+				// Mise à jour du tableau
+				tablePopulation.setItems(FXCollections.observableArrayList(pop.getIndividus()));
 
-                statutPopulation.setText(
-                        "Population : "
-                        + taille
-                        + " individus"
-                );
+				// Affichage graphique
+				afficherPopulation(zoneCentrale);
+				mettreAJourStatistiques();
 
-                statutLiens.setText(
-                        "Liens générés : non"
-                );
+			} catch (NumberFormatException e) {
 
-                boutonGenererLiens.setDisable(false);
+				
+			}
+		});
 
-                // Mise à jour du tableau
-                tablePopulation.setItems(
-                        FXCollections.observableArrayList(
-                                pop.getIndividus()
-                        )
-                );
+		// ======================================================
+		// GENERER LIENS
+		// ======================================================
 
-                // Affichage graphique
-                afficherPopulation(
-                        zoneCentrale
-                );
+		boutonGenererLiens.setOnAction(event -> {
 
-            } catch (NumberFormatException e) {
+			if (this.pop == null) {
+				return;
+			}
 
-                statutPopulation.setText(
-                        "Veuillez entrer un nombre entier"
-                );
-            }
-        });
+			this.pop.creationLiens();
 
-        // ======================================================
-        // GENERER LIENS
-        // ======================================================
+			afficherLiens(zoneCentrale);
 
-        boutonGenererLiens.setOnAction(event -> {
+			mettreAJourTooltips();
 
-            if (this.pop == null) {
-                return;
-            }
+			tablePopulation.refresh();
 
-            this.pop.creationLiens();
+			
+			boutonGenererLiens.setDisable(true);
+		});
 
-            afficherLiens(
-                    zoneCentrale
-            );
+		// ======================================================
+		// PANNEAU GAUCHE
+		// ======================================================
 
-            mettreAJourTooltips();
+		panneauGauche.getChildren().addAll(
+				titrePopulation, 
+				labelTaille, 
+				champTaille, 
+				ligneBoutons,
+				separateur1,
+				 
+				zoneStats,
+				separateur3,
+				
+				tablePopulation
+				);
 
-            tablePopulation.refresh();
+		root.setLeft(panneauGauche);
 
-            statutLiens.setText(
-                    "Liens générés : oui"
-            );
+		root.setCenter(panneauDroit);
 
-            boutonGenererLiens.setDisable(true);
-        });
+		// ======================================================
+		// FENETRE
+		// ======================================================
 
-        // ======================================================
-        // PANNEAU GAUCHE
-        // ======================================================
+		Scene scene = new Scene(root);
 
-        panneauGauche.getChildren().addAll(
-                titrePopulation,
-                labelTaille,
-                champTaille,
-                boutonGenererPopulation,
-                separateur1,
-                titreReseau,
-                boutonGenererLiens,
-                separateur2,
-                statutPopulation,
-                statutLiens,
-                separateur3,
-                tablePopulation
-        );
+		stage.setScene(scene);
 
-        root.setLeft(
-                panneauGauche
-        );
+		stage.setTitle("Simulation épidémique");
 
-        root.setCenter(
-                panneauDroit
-        );
+		stage.show();
 
-        // ======================================================
-        // FENETRE
-        // ======================================================
+		stage.setMaximized(true);
+	}
 
-        Scene scene =
-                new Scene(root);
+	// ==========================================================
+	// CONTROLE SIMULATION
+	// ==========================================================
 
-        stage.setScene(scene);
+	private VBox creerControleSimulation() {
 
-        stage.setTitle(
-                "Simulation épidémique"
-        );
+		VBox zoneControleSimulation = new VBox(10);
 
-        stage.show();
+		this.labelJour = new Label("Jour 0");
 
-        stage.setMaximized(true);
-    }
+		Button boutonPlay = new Button("▶");
 
+		Button boutonPause = new Button("⏸");
 
-    // ==========================================================
-    // CONTROLE SIMULATION
-    // ==========================================================
+		TextField champVitesse = new TextField();
 
-    private VBox creerControleSimulation() {
+		champVitesse.setPromptText("Jours / seconde");
 
-        VBox zoneControleSimulation =
-                new VBox(10);
+		zoneControleSimulation.setAlignment(Pos.CENTER);
 
-        this.labelJour =
-                new Label("Jour 0");
+		zoneControleSimulation.setStyle("-fx-border-color: transparent #999999 transparent transparent;"
+				+ "-fx-border-width: 0 1 0 0;" + "-fx-padding: 10;");
 
-        Button boutonPlay =
-                new Button("▶");
+		// ======================================================
+		// PLAY
+		// ======================================================
 
-        Button boutonPause =
-                new Button("⏸");
+		boutonPlay.setOnAction(event -> {
 
-        TextField champVitesse =
-                new TextField();
+			if (sim == null) {
+				return;
+			}
 
-        champVitesse.setPromptText(
-                "Jours / seconde"
-        );
+			/*
+			 * Si le patient zéro n'existe pas encore, on le crée.
+			 */
+			creerPatientZeroSiNecessaire();
 
-        zoneControleSimulation.setAlignment(
-                Pos.CENTER
-        );
+			/*
+			 * Champ vide :
+			 *
+			 * un clic sur Play = exactement un jour.
+			 */
+			if (champVitesse.getText().isBlank()) {
 
-        zoneControleSimulation.setStyle(
-                "-fx-border-color: transparent #999999 transparent transparent;" +
-                "-fx-border-width: 0 1 0 0;" +
-                "-fx-padding: 10;"
-        );
+				avancerUnJour();
 
-        // ======================================================
-        // PLAY
-        // ======================================================
+				return;
+			}
 
-        boutonPlay.setOnAction(event -> {
+			try {
 
-            if (sim == null) {
-                return;
-            }
+				double vitesse = Double.parseDouble(champVitesse.getText());
 
-            /*
-             * Si le patient zéro n'existe pas encore,
-             * on le crée.
-             */
-            creerPatientZeroSiNecessaire();
+				if (vitesse <= 0) {
+					return;
+				}
 
-            /*
-             * Champ vide :
-             *
-             * un clic sur Play = exactement un jour.
-             */
-            if (champVitesse.getText().isBlank()) {
+				/*
+				 * On arrête l'ancienne Timeline s'il y en avait déjà une.
+				 */
+				if (timelineSimulation != null) {
 
-                avancerUnJour();
+					timelineSimulation.stop();
+				}
 
-                return;
-            }
+				/*
+				 * Exemple :
+				 *
+				 * 1 jour/sec -> 1000 ms 2 jours/sec -> 500 ms 10 jours/sec -> 100 ms
+				 */
+				double intervalleMillis = 1000.0 / vitesse;
 
-            try {
+				timelineSimulation = new Timeline(new KeyFrame(Duration.millis(intervalleMillis),
 
-                double vitesse =
-                        Double.parseDouble(
-                                champVitesse.getText()
-                        );
+						e -> avancerUnJour()));
 
-                if (vitesse <= 0) {
-                    return;
-                }
+				timelineSimulation.setCycleCount(Timeline.INDEFINITE);
 
-                /*
-                 * On arrête l'ancienne Timeline
-                 * s'il y en avait déjà une.
-                 */
-                if (timelineSimulation != null) {
+				timelineSimulation.play();
 
-                    timelineSimulation.stop();
-                }
+			} catch (NumberFormatException e) {
 
-                /*
-                 * Exemple :
-                 *
-                 * 1 jour/sec  -> 1000 ms
-                 * 2 jours/sec -> 500 ms
-                 * 10 jours/sec -> 100 ms
-                 */
-                double intervalleMillis =
-                        1000.0 / vitesse;
+				champVitesse.clear();
+			}
+		});
 
-                timelineSimulation =
-                        new Timeline(
-                                new KeyFrame(
-                                        Duration.millis(
-                                                intervalleMillis
-                                        ),
+		// ======================================================
+		// PAUSE
+		// ======================================================
 
-                                        e -> avancerUnJour()
-                                )
-                        );
+		boutonPause.setOnAction(event -> {
 
-                timelineSimulation.setCycleCount(
-                        Timeline.INDEFINITE
-                );
+			if (timelineSimulation != null) {
 
-                timelineSimulation.play();
+				timelineSimulation.pause();
+			}
+		});
 
-            } catch (NumberFormatException e) {
+		zoneControleSimulation.getChildren().addAll(labelJour, boutonPlay, champVitesse, boutonPause);
 
-                champVitesse.clear();
-            }
-        });
+		return zoneControleSimulation;
+	}
 
-        // ======================================================
-        // PAUSE
-        // ======================================================
+	// ==========================================================
+	// PATIENT ZERO
+	// ==========================================================
 
-        boutonPause.setOnAction(event -> {
+	private void creerPatientZeroSiNecessaire() {
 
-            if (timelineSimulation != null) {
+		if (sim == null) {
+			return;
+		}
 
-                timelineSimulation.pause();
-            }
-        });
+		if (!patientZeroCree) {
 
-        zoneControleSimulation.getChildren().addAll(
-                labelJour,
-                boutonPlay,
-                champVitesse,
-                boutonPause
-        );
+			sim.patientZero();
 
-        return zoneControleSimulation;
-    }
+			patientZeroCree = true;
 
+			/*
+			 * Le patient zéro est en INCUBATION. On actualise donc immédiatement
+			 * l'affichage.
+			 */
 
-    // ==========================================================
-    // PATIENT ZERO
-    // ==========================================================
+			mettreAJourCouleurs();
 
-    private void creerPatientZeroSiNecessaire() {
+			mettreAJourTooltips();
 
-        if (sim == null) {
-            return;
-        }
+			tablePopulation.refresh();
+			mettreAJourStatistiques();
+		}
+	}
 
-        if (!patientZeroCree) {
+	// ==========================================================
+	// AVANCER D'UN JOUR
+	// ==========================================================
 
-            sim.patientZero();
+	private void avancerUnJour() {
 
-            patientZeroCree = true;
+		if (sim == null) {
+			return;
+		}
 
-            /*
-             * Le patient zéro est en INCUBATION.
-             * On actualise donc immédiatement l'affichage.
-             */
+		/*
+		 * Sécurité : si jamais cette méthode est appelée directement, on crée quand
+		 * même le patient zéro.
+		 */
+		creerPatientZeroSiNecessaire();
 
-            mettreAJourCouleurs();
+		jourActuel++;
 
-            mettreAJourTooltips();
+		/*
+		 * ICI on appelle réellement ta méthode Simulation.jPlus1()
+		 */
+		sim.jPlus1(jourActuel);
 
-            tablePopulation.refresh();
-        }
-    }
+		labelJour.setText("Jour " + jourActuel);
 
+		/*
+		 * Mise à jour de toute l'interface
+		 */
+		mettreAJourCouleurs();
 
-    // ==========================================================
-    // AVANCER D'UN JOUR
-    // ==========================================================
+		mettreAJourTooltips();
 
-    private void avancerUnJour() {
+		tablePopulation.refresh();
+		mettreAJourStatistiques();
+	}
 
-        if (sim == null) {
-            return;
-        }
+	// ==========================================================
+	// TABLEAU
+	// ==========================================================
 
-        /*
-         * Sécurité :
-         * si jamais cette méthode est appelée directement,
-         * on crée quand même le patient zéro.
-         */
-        creerPatientZeroSiNecessaire();
+	private TableView<Individu> creerTablePopulation() {
 
-        jourActuel++;
+		TableView<Individu> table = new TableView<>();
 
-        /*
-         * ICI on appelle réellement ta méthode Simulation.jPlus1()
-         */
-        sim.jPlus1(
-                jourActuel
-        );
+		TableColumn<Individu, Integer> colonneId = new TableColumn<>("ID");
 
-        labelJour.setText(
-                "Jour " + jourActuel
-        );
+		colonneId.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getId()));
 
-        /*
-         * Mise à jour de toute l'interface
-         */
-        mettreAJourCouleurs();
+		TableColumn<Individu, Integer> colonneAge = new TableColumn<>("Âge");
 
-        mettreAJourTooltips();
+		colonneAge.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getAge()));
 
-        tablePopulation.refresh();
-    }
+		TableColumn<Individu, String> colonneSexe = new TableColumn<>("Sexe");
 
+		colonneSexe.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getSexe().toString()));
 
-    // ==========================================================
-    // TABLEAU
-    // ==========================================================
+		TableColumn<Individu, String> colonneEtat = new TableColumn<>("État");
 
-    private TableView<Individu> creerTablePopulation() {
+		colonneEtat.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getEtat().toString()));
 
-        TableView<Individu> table =
-                new TableView<>();
+		TableColumn<Individu, Boolean> colonneDiab = new TableColumn<>("Diab.");
 
-        TableColumn<Individu, Integer> colonneId =
-                new TableColumn<>("ID");
+		colonneDiab.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().isDiabetique()));
 
-        colonneId.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(
-                        data.getValue().getId()
-                )
-        );
+		TableColumn<Individu, Integer> colonneContacts = new TableColumn<>("Contacts");
 
-        TableColumn<Individu, Integer> colonneAge =
-                new TableColumn<>("Âge");
+		colonneContacts
+				.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(data.getValue().getTailleListeContacts()));
 
-        colonneAge.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(
-                        data.getValue().getAge()
-                )
-        );
+		table.getColumns().addAll(colonneId, colonneAge, colonneSexe, colonneEtat, colonneDiab, colonneContacts);
 
-        TableColumn<Individu, String> colonneSexe =
-                new TableColumn<>("Sexe");
+		return table;
+	}
 
-        colonneSexe.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(
-                        data.getValue()
-                                .getSexe()
-                                .toString()
-                )
-        );
+	// ==========================================================
+	// AFFICHAGE POPULATION
+	// ==========================================================
 
-        TableColumn<Individu, String> colonneEtat =
-                new TableColumn<>("État");
+	private void afficherPopulation(Pane zoneCentrale) {
 
-        colonneEtat.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(
-                        data.getValue()
-                                .getEtat()
-                                .toString()
-                )
-        );
+		zoneCentrale.getChildren().clear();
 
-        TableColumn<Individu, Boolean> colonneDiab =
-                new TableColumn<>("Diab.");
+		pointsIndividus.clear();
 
-        colonneDiab.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(
-                        data.getValue()
-                                .isDiabetique()
-                )
-        );
+		tooltipsIndividus.clear();
 
-        TableColumn<Individu, Integer> colonneContacts =
-                new TableColumn<>("Contacts");
+		int nbIndividus = pop.getIndividus().size();
 
-        colonneContacts.setCellValueFactory(data ->
-                new ReadOnlyObjectWrapper<>(
-                        data.getValue()
-                                .getTailleListeContacts()
-                )
-        );
+		double largeur = zoneCentrale.getWidth();
 
-        table.getColumns().addAll(
-                colonneId,
-                colonneAge,
-                colonneSexe,
-                colonneEtat,
-                colonneDiab,
-                colonneContacts
-        );
+		double hauteur = zoneCentrale.getHeight();
 
-        return table;
-    }
+		double centreX = largeur / 2.0;
 
+		double centreY = hauteur / 2.0;
 
-    // ==========================================================
-    // AFFICHAGE POPULATION
-    // ==========================================================
+		double rayonMax = Math.min(largeur, hauteur) * 0.42;
 
-    private void afficherPopulation(
-            Pane zoneCentrale
-    ) {
+		double rayonPoint = 4.0;
 
-        zoneCentrale
-                .getChildren()
-                .clear();
+		double espacement = rayonPoint * 2.5;
 
-        pointsIndividus.clear();
+		int indexIndividu = 0;
 
-        tooltipsIndividus.clear();
+		for (double rayon = rayonMax;
 
-        int nbIndividus =
-                pop.getIndividus().size();
+				rayon > 20 && indexIndividu < nbIndividus;
 
-        double largeur =
-                zoneCentrale.getWidth();
+				rayon -= espacement) {
 
-        double hauteur =
-                zoneCentrale.getHeight();
+			double circonference = 2 * Math.PI * rayon;
 
-        double centreX =
-                largeur / 2.0;
+			int capaciteAnneau = (int) (circonference / espacement);
 
-        double centreY =
-                hauteur / 2.0;
+			int nbSurAnneau = Math.min(capaciteAnneau,
 
-        double rayonMax =
-                Math.min(
-                        largeur,
-                        hauteur
-                ) * 0.42;
+					nbIndividus - indexIndividu);
 
-        double rayonPoint = 4.0;
+			for (int i = 0;
 
-        double espacement =
-                rayonPoint * 2.5;
+					i < nbSurAnneau;
 
-        int indexIndividu = 0;
+					i++) {
 
-        for (
-                double rayon = rayonMax;
+				Individu individu = pop.getIndividus().get(indexIndividu);
 
-                rayon > 20
-                && indexIndividu < nbIndividus;
+				double angle = 2 * Math.PI * i / nbSurAnneau;
 
-                rayon -= espacement
-        ) {
+				double x = centreX + rayon * Math.cos(angle);
 
-            double circonference =
-                    2
-                    * Math.PI
-                    * rayon;
+				double y = centreY + rayon * Math.sin(angle);
 
-            int capaciteAnneau =
-                    (int) (
-                            circonference
-                            / espacement
-                    );
+				Circle point = new Circle(x, y, rayonPoint);
 
-            int nbSurAnneau =
-                    Math.min(
-                            capaciteAnneau,
+				point.setFill(couleurEtat(individu.getEtat()));
 
-                            nbIndividus
-                            - indexIndividu
-                    );
+				// ================= TOOLTIP =================
 
-            for (
-                    int i = 0;
+				Tooltip tooltip = new Tooltip(texteTooltip(individu));
 
-                    i < nbSurAnneau;
+				tooltip.setShowDelay(Duration.ZERO);
 
-                    i++
-            ) {
+				Tooltip.install(point, tooltip);
 
-                Individu individu =
-                        pop.getIndividus()
-                                .get(
-                                        indexIndividu
-                                );
+				tooltipsIndividus.put(individu, tooltip);
 
-                double angle =
-                        2
-                        * Math.PI
-                        * i
-                        / nbSurAnneau;
+				zoneCentrale.getChildren().add(point);
 
-                double x =
-                        centreX
-                        + rayon
-                        * Math.cos(angle);
+				pointsIndividus.put(individu, point);
 
-                double y =
-                        centreY
-                        + rayon
-                        * Math.sin(angle);
+				indexIndividu++;
+			}
+		}
+	}
 
-                Circle point =
-                        new Circle(
-                                x,
-                                y,
-                                rayonPoint
-                        );
+	// ==========================================================
+	// AFFICHAGE LIENS
+	// ==========================================================
 
-                point.setFill(
-                        couleurEtat(
-                                individu.getEtat()
-                        )
-                );
+	private void afficherLiens(Pane zoneCentrale) {
 
-                // ================= TOOLTIP =================
+		for (Individu individu : pop.getIndividus()) {
 
-                Tooltip tooltip =
-                        new Tooltip(
-                                texteTooltip(
-                                        individu
-                                )
-                        );
+			Circle pointA = pointsIndividus.get(individu);
 
-                tooltip.setShowDelay(
-                        Duration.ZERO
-                );
+			for (Individu contact : individu.getContacts()) {
 
-                Tooltip.install(
-                        point,
-                        tooltip
-                );
+				/*
+				 * Empêche de dessiner :
+				 *
+				 * A -> B puis B -> A
+				 */
 
-                tooltipsIndividus.put(
-                        individu,
-                        tooltip
-                );
+				if (individu.getId() < contact.getId()) {
 
-                zoneCentrale
-                        .getChildren()
-                        .add(point);
+					Circle pointB = pointsIndividus.get(contact);
 
-                pointsIndividus.put(
-                        individu,
-                        point
-                );
+					Line ligne = new Line(pointA.getCenterX(), pointA.getCenterY(), pointB.getCenterX(),
+							pointB.getCenterY());
 
-                indexIndividu++;
-            }
-        }
-    }
+					ligne.setStroke(Color.rgb(80, 80, 80, 0.35));
 
+					ligne.setStrokeWidth(0.6);
 
-    // ==========================================================
-    // AFFICHAGE LIENS
-    // ==========================================================
+					/*
+					 * Les lignes ne gênent pas le survol des points.
+					 */
+					ligne.setMouseTransparent(true);
 
-    private void afficherLiens(
-            Pane zoneCentrale
-    ) {
+					/*
+					 * Index 0 : ligne derrière les points.
+					 */
+					zoneCentrale.getChildren().add(0, ligne);
+				}
+			}
+		}
+	}
 
-        for (Individu individu :
-                pop.getIndividus()) {
+	// ==========================================================
+	// COULEURS ETATS
+	// ==========================================================
 
-            Circle pointA =
-                    pointsIndividus.get(
-                            individu
-                    );
+	private Color couleurEtat(EtatSante etat) {
 
-            for (Individu contact :
-                    individu.getContacts()) {
+		return switch (etat) {
 
-                /*
-                 * Empêche de dessiner :
-                 *
-                 * A -> B
-                 * puis
-                 * B -> A
-                 */
+		case SAIN -> Color.GREEN;
 
-                if (
-                        individu.getId()
-                        < contact.getId()
-                ) {
+		case INCUBATION -> Color.ORANGE;
 
-                    Circle pointB =
-                            pointsIndividus.get(
-                                    contact
-                            );
+		case MALADE -> Color.RED;
 
-                    Line ligne =
-                            new Line(
-                                    pointA.getCenterX(),
-                                    pointA.getCenterY(),
-                                    pointB.getCenterX(),
-                                    pointB.getCenterY()
-                            );
+		case GUERI -> Color.DODGERBLUE;
 
-                    ligne.setStroke(
-                            Color.rgb(
-                                    80,
-                                    80,
-                                    80,
-                                    0.35
-                            )
-                    );
+		case MORT -> Color.DARKGRAY;
+		};
+	}
 
-                    ligne.setStrokeWidth(
-                            0.6
-                    );
+	// ==========================================================
+	// MISE A JOUR COULEURS
+	// ==========================================================
 
-                    /*
-                     * Les lignes ne gênent pas
-                     * le survol des points.
-                     */
-                    ligne.setMouseTransparent(
-                            true
-                    );
+	private void mettreAJourCouleurs() {
 
-                    /*
-                     * Index 0 :
-                     * ligne derrière les points.
-                     */
-                    zoneCentrale
-                            .getChildren()
-                            .add(
-                                    0,
-                                    ligne
-                            );
-                }
-            }
-        }
-    }
+		if (pop == null) {
+			return;
+		}
 
+		for (Individu individu : pop.getIndividus()) {
 
-    // ==========================================================
-    // COULEURS ETATS
-    // ==========================================================
+			Circle point = pointsIndividus.get(individu);
 
-    private Color couleurEtat(
-            EtatSante etat
-    ) {
+			if (point != null) {
 
-        return switch (etat) {
+				point.setFill(couleurEtat(individu.getEtat()));
+			}
+		}
+	}
 
-            case SAIN ->
-                    Color.GREEN;
+	// ==========================================================
+	// ZONES STATISTIQUES
+	// ==========================================================
+	private VBox creerZoneStatistiques() {
 
-            case INCUBATION ->
-                    Color.ORANGE;
+		VBox zoneStatistiques = new VBox(8);
 
-            case MALADE ->
-                    Color.RED;
+		labelSains = new Label("Sains : 0");
+		labelIncubation = new Label("Incubation : 0");
+		labelMalades = new Label("Malades : 0");
+		labelGueris = new Label("Guéris : 0");
+		labelMorts = new Label("Morts : 0");
 
-            case GUERI ->
-                    Color.DODGERBLUE;
+		zoneStatistiques.setAlignment(Pos.CENTER_LEFT);
 
-            case MORT ->
-                    Color.DARKGRAY;
-        };
-    }
+		zoneStatistiques.setPadding(new Insets(15));
 
+		zoneStatistiques.getChildren().addAll(labelSains, labelIncubation, labelMalades, labelGueris, labelMorts);
 
-    // ==========================================================
-    // MISE A JOUR COULEURS
-    // ==========================================================
+		return zoneStatistiques;
+	}
+	// ==========================================================
+	// MISE A JOUR ZONES STATISTIQUE
+	// ==========================================================
 
-    private void mettreAJourCouleurs() {
+	private void mettreAJourStatistiques() {
 
-        if (pop == null) {
-            return;
-        }
+		if (pop == null) {
+			return;
+		}
 
-        for (Individu individu :
-                pop.getIndividus()) {
+		int sains = 0;
+		int incubation = 0;
+		int malades = 0;
+		int gueris = 0;
+		int morts = 0;
 
-            Circle point =
-                    pointsIndividus.get(
-                            individu
-                    );
+		for (Individu individu : pop.getIndividus()) {
 
-            if (point != null) {
+			switch (individu.getEtat()) {
 
-                point.setFill(
-                        couleurEtat(
-                                individu.getEtat()
-                        )
-                );
-            }
-        }
-    }
+			case SAIN:
+				sains++;
+				break;
 
+			case INCUBATION:
+				incubation++;
+				break;
 
-    // ==========================================================
-    // TOOLTIP
-    // ==========================================================
+			case MALADE:
+				malades++;
+				break;
 
-    private String texteTooltip(
-            Individu individu
-    ) {
+			case GUERI:
+				gueris++;
+				break;
 
-        return "Individu "
-                + individu.getId()
+			case MORT:
+				morts++;
+				break;
+			}
+		}
 
-                + "\nÂge : "
-                + individu.getAge()
+		labelSains.setText("Sains : " + sains);
 
-                + "\nSexe : "
-                + individu.getSexe()
+		labelIncubation.setText("Incubation : " + incubation);
 
-                + "\nÉtat : "
-                + individu.getEtat()
+		labelMalades.setText("Malades : " + malades);
 
-                + "\nDiabétique : "
-                + (
-                        individu.isDiabetique()
-                        ? "Oui"
-                        : "Non"
-                )
+		labelGueris.setText("Guéris : " + gueris);
 
-                + "\nContacts : "
-                + individu
-                        .getTailleListeContacts();
-    }
+		labelMorts.setText("Morts : " + morts);
+	}
 
+	// ==========================================================
+	// TOOLTIP
+	// ==========================================================
 
-    // ==========================================================
-    // MISE A JOUR TOOLTIPS
-    // ==========================================================
+	private String texteTooltip(Individu individu) {
 
-    private void mettreAJourTooltips() {
+		return "Individu " + individu.getId()
 
-        if (pop == null) {
-            return;
-        }
+				+ "\nÂge : " + individu.getAge()
 
-        for (Individu individu :
-                pop.getIndividus()) {
+				+ "\nSexe : " + individu.getSexe()
 
-            Tooltip tooltip =
-                    tooltipsIndividus.get(
-                            individu
-                    );
+				+ "\nÉtat : " + individu.getEtat()
 
-            if (tooltip != null) {
+				+ "\nDiabétique : " + (individu.isDiabetique() ? "Oui" : "Non")
 
-                tooltip.setText(
-                        texteTooltip(
-                                individu
-                        )
-                );
-            }
-        }
-    }
+				+ "\nContacts : " + individu.getTailleListeContacts();
+	}
 
+	// ==========================================================
+	// MISE A JOUR TOOLTIPS
+	// ==========================================================
 
-    // ==========================================================
-    // MAIN
-    // ==========================================================
+	private void mettreAJourTooltips() {
 
-    public static void main(String[] args) {
+		if (pop == null) {
+			return;
+		}
 
-        launch(args);
-    }
+		for (Individu individu : pop.getIndividus()) {
+
+			Tooltip tooltip = tooltipsIndividus.get(individu);
+
+			if (tooltip != null) {
+
+				tooltip.setText(texteTooltip(individu));
+			}
+		}
+	}
+
+	// ==========================================================
+	// MAIN
+	// ==========================================================
+
+	public static void main(String[] args) {
+
+		launch(args);
+	}
 }
