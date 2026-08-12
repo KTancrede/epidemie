@@ -6,118 +6,222 @@ import parametres.IParametresMaladie;
 import parametres.IParametresPopulation;
 
 public class Simulation {
-	
-	private int tempsSimulation;
-	private IParametresPopulation paramPop;
-	private IParametresMaladie paramMal;
-	private Population pop;
-	private HashSet<Individu> infectes;
-	
-	public Simulation(IParametresPopulation paramPop,IParametresMaladie paramMal,int tempsSimulation) {
-		this.paramMal = paramMal;
-		this.paramPop = paramPop;
-		this.pop= new Population(paramPop);
-		this.tempsSimulation=tempsSimulation;
-		this.infectes = new HashSet<>();
-	}
-	
-	public void patientZero() {
-		int z = (int) (Math.random() * pop.getTaillePop());
 
-		Individu patientZero = pop.getIndividus().get(z);
-		patientZero.setEtat(EtatSante.INCUBATION, 0);
-	    this.infectes.add(patientZero);
-	    System.out.println(patientZero);
-	}
-	
-	public Population getPop() {
-		return pop;
-	}
-	public int getTempsSim() {
-		return this.tempsSimulation;
-	}
-	
-	public void jPlus1(int jourSim) {
+    private int tempsSimulation;
+    private IParametresPopulation paramPop;
+    private IParametresMaladie paramMal;
+    private Population pop;
+    private HashSet<Individu> infectes;
 
-	    HashSet<Individu> nouveauxMalades = new HashSet<>();
-	    HashSet<Individu> finMaladie = new HashSet<>();
+    private int dernierJourNouvelleInfection = 0;
 
-	    for (Individu malade : infectes) {
+    public Simulation(
+            IParametresPopulation paramPop,
+            IParametresMaladie paramMal,
+            int tempsSimulation) {
 
-	        // On avance d'un jour
-	        malade.setJoursDepuisInfection(
-	                malade.getJoursDepuisInfection() + 1
-	        );
+        this.paramMal = paramMal;
+        this.paramPop = paramPop;
+        this.pop = new Population(paramPop);
+        this.tempsSimulation = tempsSimulation;
+        this.infectes = new HashSet<>();
+    }
 
-	        int joursInfecte = malade.getJoursDepuisInfection();
+    public void patientZero() {
 
-	        // Fin de l'incubation
-	        if (joursInfecte == paramMal.dureeIncubation()) {
-	            malade.setEtat(EtatSante.MALADE, jourSim);
-	        }
+        int z = (int) (
+                Math.random()
+                * pop.getTaillePop()
+        );
 
-	        // Période contagieuse
-	        if (joursInfecte >= paramMal.dureeIncubation()
-	                && joursInfecte < paramMal.dureeIncubation()
-	                        + paramMal.dureeContagion()) {
+        Individu patientZero =
+                pop.getIndividus().get(z);
 
-	        	for (Individu contact : malade.getContacts()) {
+        patientZero.setEtat(
+                EtatSante.INCUBATION,
+                0
+        );
 
-	        	    // ================= PERSONNE SAINE =================
+        this.infectes.add(patientZero);
 
-	        	    if (contact.getEtat() == EtatSante.SAIN) {
+        this.dernierJourNouvelleInfection = 0;
 
-	        	        if (Math.random() <= paramMal.probabiliteTransmission()) {
+        System.out.println(patientZero);
+    }
 
-	        	            contact.setEtat(EtatSante.INCUBATION, jourSim);
-	        	            contact.setJoursDepuisInfection(0);
+    public Population getPop() {
+        return pop;
+    }
 
-	        	            nouveauxMalades.add(contact);
-	        	        }
-	        	    }
+    public int getTempsSim() {
+        return this.tempsSimulation;
+    }
 
-	        	    // ================= PERSONNE GUERIE =================
+    public void jPlus1(int jourSim) {
 
-	        	    else if (contact.getEtat() == EtatSante.GUERI) {
+        HashSet<Individu> nouveauxMalades =
+                new HashSet<>();
 
-	        	        double probaReinfection =
-	        	                paramMal.probabiliteTransmission()
-	        	                * paramMal.probabiliteReinfection();
+        HashSet<Individu> finMaladie =
+                new HashSet<>();
 
-	        	        if (Math.random() <= probaReinfection) {
+        for (Individu malade : infectes) {
 
-	        	            contact.setEtat(EtatSante.INCUBATION, jourSim);
-	        	            contact.setJoursDepuisInfection(0);
+            // ================= AVANCER D'UN JOUR =================
 
-	        	            nouveauxMalades.add(contact);
-	        	        }
-	        	    }
-	        	}
-	        }
+            malade.setJoursDepuisInfection(
+                    malade.getJoursDepuisInfection() + 1
+            );
 
-	        // Fin de la maladie
-	        
-	        if (joursInfecte >= paramMal.dureeIncubation()
-	                + paramMal.dureeContagion()) {
-	        	double probaDeces = 1.0 - paramMal.probabiliteGuerison();
+            int joursInfecte =
+                    malade.getJoursDepuisInfection();
 
-	        	probaDeces *= paramMal.facteurRisqueAge(malade.getAge());
-	        	if (malade.isDiabetique()) {
-	        		probaDeces *= paramMal.facteurRisqueDiabete();
-	        	}
-	        	
-	        	probaDeces = Math.min(probaDeces, 1.0);
-	        	if (Math.random() < probaDeces) {
-	        	    malade.setEtat(EtatSante.MORT, jourSim);
-	        	} else {
-	        	    malade.setEtat(EtatSante.GUERI, jourSim);
-	        	}
+            // ================= FIN INCUBATION =================
 
-	            finMaladie.add(malade);
-	        }
-	    }
+            if (
+                    joursInfecte
+                    == paramMal.dureeIncubation()
+            ) {
 
-	    infectes.removeAll(finMaladie);
-	    infectes.addAll(nouveauxMalades);
-	}
+                malade.setEtat(
+                        EtatSante.MALADE,
+                        jourSim
+                );
+            }
+
+            // ================= PERIODE CONTAGIEUSE =================
+
+            if (
+                    joursInfecte
+                    >= paramMal.dureeIncubation()
+
+                    &&
+
+                    joursInfecte
+                    < paramMal.dureeIncubation()
+                    + paramMal.dureeContagion()
+            ) {
+
+                for (Individu contact : malade.getContacts()) {
+
+                    // ================= PERSONNE SAINE =================
+
+                    if (
+                            contact.getEtat()
+                            == EtatSante.SAIN
+                    ) {
+
+                        if (
+                                Math.random()
+                                <= paramMal.probabiliteTransmission()
+                        ) {
+
+                            contact.setEtat(
+                                    EtatSante.INCUBATION,
+                                    jourSim
+                            );
+
+                            contact.setJoursDepuisInfection(0);
+
+                            nouveauxMalades.add(contact);
+
+                            dernierJourNouvelleInfection =
+                                    jourSim;
+                        }
+                    }
+
+                    // ================= PERSONNE GUERIE =================
+
+                    else if (
+                            contact.getEtat()
+                            == EtatSante.GUERI
+                    ) {
+
+                        double probaReinfection =
+                                paramMal.probabiliteTransmission()
+                                * paramMal.probabiliteReinfection();
+
+                        if (
+                                Math.random()
+                                <= probaReinfection
+                        ) {
+
+                            contact.setEtat(
+                                    EtatSante.INCUBATION,
+                                    jourSim
+                            );
+
+                            contact.setJoursDepuisInfection(0);
+
+                            nouveauxMalades.add(contact);
+
+                            dernierJourNouvelleInfection =
+                                    jourSim;
+                        }
+                    }
+                }
+            }
+
+            // ================= FIN DE LA MALADIE =================
+
+            if (
+                    joursInfecte
+                    >= paramMal.dureeIncubation()
+                    + paramMal.dureeContagion()
+            ) {
+
+                double probaDeces =
+                        1.0
+                        - paramMal.probabiliteGuerison();
+
+                probaDeces *=
+                        paramMal.facteurRisqueAge(
+                                malade.getAge()
+                        );
+
+                if (malade.isDiabetique()) {
+
+                    probaDeces *=
+                            paramMal.facteurRisqueDiabete();
+                }
+
+                probaDeces =
+                        Math.min(
+                                probaDeces,
+                                1.0
+                        );
+
+                if (
+                        Math.random()
+                        < probaDeces
+                ) {
+
+                    malade.setEtat(
+                            EtatSante.MORT,
+                            jourSim
+                    );
+
+                } else {
+
+                    malade.setEtat(
+                            EtatSante.GUERI,
+                            jourSim
+                    );
+                }
+
+                finMaladie.add(malade);
+            }
+        }
+
+        infectes.removeAll(finMaladie);
+        infectes.addAll(nouveauxMalades);
+    }
+
+    // ================= FIN DE SIMULATION =================
+
+    public boolean estTerminee(int jourSim) {
+
+        return infectes.isEmpty();
+                
+    }
 }
