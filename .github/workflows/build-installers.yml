@@ -176,12 +176,17 @@ jobs:
       # =========================================================
 
       - name: Vérifier signature RPM
-        if: matrix.platform == 'linux'
+  	if: matrix.platform == 'linux'
 
-        run: |
+  	env:
+    	  RPM_GPG_KEY_ID: ${{ secrets.RPM_GPG_KEY_ID }}
 
-          rpm -Kv \
-            target/installers/*.rpm
+ 	run: |
+   	  gpg --armor --export "$RPM_GPG_KEY_ID" > target/installers/simepie-public.asc
+
+    	  sudo rpm --import simepie-public.asc
+
+    	  rpm -Kv target/installers/*.rpm
 
 
       # =========================================================
