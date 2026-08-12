@@ -27,13 +27,25 @@ public class Individu {
 		this.isDiabetique = isDiabetique;
 	}
 
+	public int getId() {
+		return this.id;
+	}
+	
 	public void addContact(Individu i) {
 		if (i != this) {
 			contacts.add(i);
 			i.contacts.add(this);
 		}
 	}
-
+	
+	public Sexe getSexe() {
+		return this.sexe;
+	}
+	
+	public static void resetCompteurID() {
+	    compteurID = 0;
+	}
+	
 	@Override
 	public String toString() {
 	    return String.format(
