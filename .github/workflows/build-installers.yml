@@ -162,11 +162,16 @@ jobs:
         env:
           RPM_GPG_KEY_ID: ${{ secrets.RPM_GPG_KEY_ID }}
         run: |
-          gpg --armor --export "$RPM_GPG_KEY_ID" > target/installers/simepie-public.asc
+          gpg --armor --export "$RPM_GPG_KEY_ID" \
+            > target/installers/simepie-public.asc
 
-          sudo rpm --import target/installers/simepie-public.asc
+          mkdir -p "$RUNNER_TEMP/simepie-rpmdb"
 
-          rpm -Kv target/installers/*.rpm
+          rpmdb             --initdb             --dbpath "$RUNNER_TEMP/simepie-rpmdb"
+
+          rpmkeys             --dbpath "$RUNNER_TEMP/simepie-rpmdb"             --import target/installers/simepie-public.asc
+
+          rpmkeys             --dbpath "$RUNNER_TEMP/simepie-rpmdb"             --checksig target/installers/*.rpm
 
 
       # =========================================================
