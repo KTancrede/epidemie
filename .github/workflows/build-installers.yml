@@ -32,7 +32,7 @@ jobs:
       # =========================================================
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
 
       # =========================================================
@@ -40,7 +40,7 @@ jobs:
       # =========================================================
 
       - name: Setup Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -167,11 +167,17 @@ jobs:
 
           mkdir -p "$RUNNER_TEMP/simepie-rpmdb"
 
-          rpmdb             --initdb             --dbpath "$RUNNER_TEMP/simepie-rpmdb"
+          rpmdb \
+            --initdb \
+            --dbpath "$RUNNER_TEMP/simepie-rpmdb"
 
-          rpmkeys             --dbpath "$RUNNER_TEMP/simepie-rpmdb"             --import target/installers/simepie-public.asc
+          rpmkeys \
+            --dbpath "$RUNNER_TEMP/simepie-rpmdb" \
+            --import target/installers/simepie-public.asc
 
-          rpmkeys             --dbpath "$RUNNER_TEMP/simepie-rpmdb"             --checksig target/installers/*.rpm
+          rpmkeys \
+            --dbpath "$RUNNER_TEMP/simepie-rpmdb" \
+            --checksig target/installers/*.rpm
 
 
       # =========================================================
@@ -239,7 +245,7 @@ jobs:
       # =========================================================
 
       - name: Upload installers
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Simepie-${{ matrix.platform }}
           path: target/installers/*
