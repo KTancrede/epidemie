@@ -70,6 +70,48 @@ public class Simulation {
         
         
     }
+    private double calculerProbabiliteDeces(Individu individu) {
+
+        double probaBase =
+                1.0 - paramMal.probabiliteGuerison();
+
+        // Cas limites
+        if (probaBase <= 0.0) {
+            return 0.0;
+        }
+
+        if (probaBase >= 1.0) {
+            return 1.0;
+        }
+
+        double facteurRisque =
+                paramMal.facteurRisqueAge(
+                        individu.getAge()
+                );
+
+        if (individu.isDiabetique()) {
+
+            facteurRisque *=
+                    paramMal.facteurRisqueDiabete();
+        }
+
+        /*
+         * Transformation d'une probabilité
+         * avec un risque relatif.
+         */
+        double probaDeces =
+                (facteurRisque * probaBase)
+                /
+                (
+                    1.0 - probaBase
+                    + facteurRisque * probaBase
+                );
+
+        return Math.max(
+                0.0,
+                Math.min(probaDeces, 1.0)
+        );
+    }
     
     public void definirPatientZero(Individu individu) {
 
@@ -253,26 +295,8 @@ public class Simulation {
                     + paramMal.dureeContagion()
             ) {
 
-                double probaDeces =
-                        1.0
-                        - paramMal.probabiliteGuerison();
-
-                probaDeces *=
-                        paramMal.facteurRisqueAge(
-                                malade.getAge()
-                        );
-
-                if (malade.isDiabetique()) {
-
-                    probaDeces *=
-                            paramMal.facteurRisqueDiabete();
-                }
-
-                probaDeces =
-                        Math.min(
-                                probaDeces,
-                                1.0
-                        );
+            	double probaDeces =
+            	        calculerProbabiliteDeces(malade);
 
                 if (
                         Math.random()

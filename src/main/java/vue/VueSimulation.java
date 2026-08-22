@@ -32,6 +32,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.control.TableRow;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseButton;
 
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -78,7 +79,7 @@ public class VueSimulation extends Application {
     private Label labelJour;
 
     private TableView<Individu> tablePopulation;
-
+    private Individu individuVerrouille = null;
     // ==========================================================
     // STATISTIQUES
     // ==========================================================
@@ -1068,6 +1069,11 @@ public class VueSimulation extends Application {
             TableRow<Individu> row =
                     new TableRow<>();
 
+
+            // ======================================================
+            // SURVOL
+            // ======================================================
+
             row.setOnMouseEntered(event -> {
 
                 Individu individu =
@@ -1077,17 +1083,17 @@ public class VueSimulation extends Application {
                     return;
                 }
 
-                Circle point =
-                        pointsIndividus.get(individu);
+                // Survol actif uniquement
+                // s'il n'y a personne de verrouillé
 
-                if (point != null) {
+                if (individuVerrouille == null) {
 
-                    point.setScaleX(2.0);
-                    point.setScaleY(2.0);
-
-                    point.toFront();
+                    agrandirIndividu(
+                            individu
+                    );
                 }
             });
+
 
             row.setOnMouseExited(event -> {
 
@@ -1098,15 +1104,98 @@ public class VueSimulation extends Application {
                     return;
                 }
 
-                Circle point =
-                        pointsIndividus.get(individu);
+                // Si personne n'est verrouillé,
+                // fonctionnement normal du survol
 
-                if (point != null) {
+                if (individuVerrouille == null) {
 
-                    point.setScaleX(1.0);
-                    point.setScaleY(1.0);
+                    reduireIndividu(
+                            individu
+                    );
+                }
+
+                // Si un autre individu est verrouillé,
+                // celui qu'on quitte doit rester normal
+
+                else if (individu != individuVerrouille) {
+
+                    reduireIndividu(
+                            individu
+                    );
                 }
             });
+
+
+            // ======================================================
+            // CLIC SOURIS
+            // ======================================================
+
+            row.setOnMouseClicked(event -> {
+
+                Individu individu =
+                        row.getItem();
+
+                if (individu == null) {
+                    return;
+                }
+
+
+                // ==================================================
+                // CLIC GAUCHE = VERROUILLER
+                // ==================================================
+
+                if (
+                        event.getButton()
+                        == MouseButton.PRIMARY
+                ) {
+
+                    // S'il y avait déjà quelqu'un
+                    // de verrouillé, on le réduit
+
+                    if (
+                            individuVerrouille != null
+                            && individuVerrouille != individu
+                    ) {
+
+                        reduireIndividu(
+                                individuVerrouille
+                        );
+                    }
+
+                    // Nouveau verrouillage
+
+                    individuVerrouille =
+                            individu;
+
+                    agrandirIndividu(
+                            individuVerrouille
+                    );
+                }
+
+
+                // ==================================================
+                // CLIC DROIT = DEVERROUILLER
+                // ==================================================
+
+                else if (
+                        event.getButton()
+                        == MouseButton.SECONDARY
+                ) {
+
+                    if (
+                            individuVerrouille != null
+                    ) {
+
+                        reduireIndividu(
+                                individuVerrouille
+                        );
+
+                        individuVerrouille =
+                                null;
+                    }
+                }
+            });
+
 
             return row;
         });
@@ -1403,7 +1492,44 @@ public class VueSimulation extends Application {
             }
         }
     }
+    
+    // ==========================================================
+    // AFFICHAGE GROSSIR INDIVIDU
+    // ==========================================================
+    private void agrandirIndividu(Individu individu) {
 
+        if (individu == null) {
+            return;
+        }
+
+        Circle point =
+                pointsIndividus.get(individu);
+
+        if (point != null) {
+
+            point.setScaleX(2.0);
+            point.setScaleY(2.0);
+
+            point.toFront();
+        }
+    }
+
+
+    private void reduireIndividu(Individu individu) {
+
+        if (individu == null) {
+            return;
+        }
+
+        Circle point =
+                pointsIndividus.get(individu);
+
+        if (point != null) {
+
+            point.setScaleX(1.0);
+            point.setScaleY(1.0);
+        }
+    }
 
     // ==========================================================
     // CLASSE CSS SELON ETAT
