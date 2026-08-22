@@ -12,7 +12,9 @@ public class Simulation {
     private IParametresMaladie paramMal;
     private Population pop;
     private HashSet<Individu> infectes;
-
+    
+    private Individu patientZero;
+    
     private int dernierJourNouvelleInfection = 0;
 
     public Simulation(
@@ -27,28 +29,109 @@ public class Simulation {
         this.infectes = new HashSet<>();
     }
 
+    public Simulation(
+            Population pop,
+            IParametresMaladie paramMal,
+            int tempsSimulation) {
+
+        this.paramMal = paramMal;
+        this.pop = pop;
+        this.tempsSimulation = tempsSimulation;
+        this.infectes = new HashSet<>();
+    }
+    
     public void patientZero() {
 
-        int z = (int) (
-                Math.random()
-                * pop.getTaillePop()
-        );
+        int z =
+                (int) (
+                        Math.random()
+                        * pop.getTaillePop()
+                );
 
-        Individu patientZero =
+        this.patientZero =
                 pop.getIndividus().get(z);
 
-        patientZero.setEtat(
+        this.patientZero.setEtat(
                 EtatSante.INCUBATION,
                 0
         );
 
-        this.infectes.add(patientZero);
+        this.patientZero.setJoursDepuisInfection(0);
+
+        this.infectes.add(
+                this.patientZero
+        );
 
         this.dernierJourNouvelleInfection = 0;
 
-        System.out.println(patientZero);
+        System.out.println(
+                this.patientZero
+        );
+        
+        
     }
+    
+    public void definirPatientZero(Individu individu) {
 
+        this.patientZero = individu;
+
+        this.patientZero.setEtat(
+                EtatSante.INCUBATION,
+                0
+        );
+
+        this.patientZero.setJoursDepuisInfection(0);
+
+        this.infectes.add(
+                this.patientZero
+        );
+
+        this.dernierJourNouvelleInfection = 0;
+    }
+    
+    
+    public Individu getPatientZero() {
+        return patientZero;
+    }
+    
+    public void resetSimulation() {
+
+        // On vide tous les cas actifs
+        infectes.clear();
+
+        // On remet tous les individus à l'état initial
+        for (Individu individu : pop.getIndividus()) {
+
+            individu.setEtat(
+                    EtatSante.SAIN,
+                    0
+            );
+
+            individu.setJoursDepuisInfection(
+                    0
+            );
+        }
+
+        // On remet EXACTEMENT le même patient zéro
+        if (patientZero != null) {
+
+            patientZero.setEtat(
+                    EtatSante.INCUBATION,
+                    0
+            );
+
+            patientZero.setJoursDepuisInfection(
+                    0
+            );
+
+            infectes.add(
+                    patientZero
+            );
+        }
+
+        dernierJourNouvelleInfection = 0;
+    }
+    
     public Population getPop() {
         return pop;
     }

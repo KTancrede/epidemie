@@ -5,11 +5,16 @@ import java.util.Map;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+
 import javafx.application.Application;
+
 import javafx.beans.property.ReadOnlyObjectWrapper;
+
 import javafx.collections.FXCollections;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -25,14 +30,17 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.control.TableRow;
+import javafx.scene.image.Image;
+
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.scene.image.Image;
 
 import modele.EtatSante;
 import modele.Individu;
 import modele.Population;
 import modele.Simulation;
+
 import parametres.IParametresPopulation;
 import parametres.ParametresMaladie;
 import parametres.TestParamPop;
@@ -56,7 +64,7 @@ public class VueSimulation extends Application {
     private boolean simulationTerminee = false;
 
     private Timeline timelineSimulation;
-
+    private Individu patientZeroOriginal;
     // ==========================================================
     // ELEMENTS GRAPHIQUES
     // ==========================================================
@@ -674,7 +682,31 @@ public class VueSimulation extends Application {
         boutonPause.getStyleClass().add(
                 "bouton-pause"
         );
+        
+        // ======================================================
+        // RESET (1?)
+        // ======================================================
+        
+        Button boutonReset =
+                new Button("↻");
 
+        boutonReset.getStyleClass().add(
+                "bouton-reset"
+        );
+        
+        Tooltip tooltipReset =
+                new Tooltip(
+                        "Reset de l'épidémie avec le même patient 0 et la même population"
+                );
+
+        tooltipReset.setShowDelay(
+                Duration.millis(200)
+        );
+
+        Tooltip.install(
+                boutonReset,
+                tooltipReset
+        );
         // ======================================================
         // VITESSE
         // ======================================================
@@ -791,10 +823,75 @@ public class VueSimulation extends Application {
                     }
                 }
         );
+        // ======================================================
+        // ACTION RESET 1
+        // ======================================================
 
+        boutonReset.setOnAction(event -> {
+
+            if (
+                    sim == null
+                    || patientZeroOriginal == null
+            ) {
+                return;
+            }
+
+            if (timelineSimulation != null) {
+                timelineSimulation.stop();
+            }
+
+            // ================= REMISE A ZERO DES INDIVIDUS =================
+
+            for (Individu individu : pop.getIndividus()) {
+
+                individu.setEtat(
+                        EtatSante.SAIN,
+                        0
+                );
+
+                individu.setJoursDepuisInfection(
+                        0
+                );
+            }
+
+            // ================= RESET INTERFACE =================
+
+            jourActuel = 0;
+
+            simulationTerminee = false;
+
+            patientZeroCree = false;
+
+            labelJour.setText(
+                    "Jour 0"
+            );
+
+            // ================= PARAMETRES MALADIE MODIFIABLES =================
+
+            zoneParametresMaladie.setDisable(
+                    false
+            );
+
+            mettreAJourCouleurs();
+            mettreAJourTooltips();
+            mettreAJourStatistiques();
+
+            tablePopulation.refresh();
+        });
         // ======================================================
         // AJOUT
         // ======================================================
+
+        HBox lignePauseReset =
+                new HBox(
+                        8,
+                        boutonPause,
+                        boutonReset
+                );
+
+        lignePauseReset.setAlignment(
+                Pos.CENTER
+        );
 
         zoneControleSimulation
                 .getChildren()
@@ -802,7 +899,7 @@ public class VueSimulation extends Application {
                         labelJour,
                         boutonPlay,
                         champVitesse,
-                        boutonPause
+                        lignePauseReset
                 );
 
         return zoneControleSimulation;
@@ -816,24 +913,47 @@ public class VueSimulation extends Application {
     private void creerPatientZeroSiNecessaire() {
 
         if (
-                sim == null
+                pop == null
                 || simulationTerminee
         ) {
-
             return;
         }
 
-        if (
-                !patientZeroCree
-        ) {
+        if (!patientZeroCree) {
 
-            sim.patientZero();
+            ParametresMaladie paramMal =
+                    lireParametresMaladie();
+
+            // On recrée la simulation
+            // MAIS avec la même population
+            sim =
+                    new Simulation(
+                            pop,
+                            paramMal,
+                            0
+                    );
+
+            // Premier lancement :
+            // patient zéro aléatoire
+            if (patientZeroOriginal == null) {
+
+                sim.patientZero();
+
+                patientZeroOriginal =
+                        sim.getPatientZero();
+
+            } else {
+
+                // Lancements suivants :
+                // exactement le même patient zéro
+
+                sim.definirPatientZero(
+                        patientZeroOriginal
+                );
+            }
 
             patientZeroCree =
                     true;
-
-            // Les paramètres maladie ne peuvent
-            // plus être modifiés après lancement.
 
             zoneParametresMaladie
                     .setDisable(true);
@@ -942,7 +1062,55 @@ public class VueSimulation extends Application {
         table.setColumnResizePolicy(
         		 TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS
         );
+        
+        table.setRowFactory(tv -> {
 
+            TableRow<Individu> row =
+                    new TableRow<>();
+
+            row.setOnMouseEntered(event -> {
+
+                Individu individu =
+                        row.getItem();
+
+                if (individu == null) {
+                    return;
+                }
+
+                Circle point =
+                        pointsIndividus.get(individu);
+
+                if (point != null) {
+
+                    point.setScaleX(2.0);
+                    point.setScaleY(2.0);
+
+                    point.toFront();
+                }
+            });
+
+            row.setOnMouseExited(event -> {
+
+                Individu individu =
+                        row.getItem();
+
+                if (individu == null) {
+                    return;
+                }
+
+                Circle point =
+                        pointsIndividus.get(individu);
+
+                if (point != null) {
+
+                    point.setScaleX(1.0);
+                    point.setScaleY(1.0);
+                }
+            });
+
+            return row;
+        });
+        
         // ======================================================
         // ID
         // ======================================================
